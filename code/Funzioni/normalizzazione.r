@@ -3,4 +3,4 @@ normalizza <- function(x){
   return(x/sum(x))
 }
 
-apply(oliveoil[, 3:10] + 1, 2, normalizza)
+apply(oliveoil[, 3:10] + 1, 1, normalizza)
