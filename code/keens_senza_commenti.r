@@ -114,28 +114,28 @@ km.out <- kmeans(oliveoil[, 3:10], centers=4, nstart = 15)
 par(mfrow=c(3,3))
 
 # palmitic palmitoleic
-plot(oliveoil$palmitic, oliveoil$palmitoleic, col = km.out$cluster)
+plot(oliveoil$palmitic, oliveoil$palmitoleic, col = km.out$cluster, pch = 19)
 
 # oleic palmitic
-plot(oliveoil$oleic, oliveoil$palmitic, col = km.out$cluster)
+plot(oliveoil$oleic, oliveoil$palmitic, col = km.out$cluster, pch = 19)
 
 # oleic palmitoleic
-plot(oliveoil$oleic, oliveoil$palmitoleic, col = km.out$cluster)
+plot(oliveoil$oleic, oliveoil$palmitoleic, col = km.out$cluster, pch = 19)
 
 # linoleic palmitoleic
-plot(oliveoil$linoleic, oliveoil$palmitoleic, col = km.out$cluster)
+plot(oliveoil$linoleic, oliveoil$palmitoleic, col = km.out$cluster, pch = 19)
 
 # linoleic oleic
-plot(oliveoil$palmitoleic, oliveoil$linoleic, col = km.out$cluster)
+plot(oliveoil$palmitoleic, oliveoil$linoleic, col = km.out$cluster, pch = 19)
 
 # arachidic linolenic
-plot(oliveoil$linolenic, oliveoil$arachidic, col = km.out$cluster)
+plot(oliveoil$linolenic, oliveoil$arachidic, col = km.out$cluster, pch = 19)
 
 # eicosenoic palmitic
-plot(oliveoil$palmitic, oliveoil$eicosenoic, col = km.out$cluster)
+plot(oliveoil$palmitic, oliveoil$eicosenoic, col = km.out$cluster, pch = 19)
 
 # eicosenoic linolenic
-plot(oliveoil$linolenic, oliveoil$eicosenoic, col = km.out$cluster)
+plot(oliveoil$linolenic, oliveoil$eicosenoic, col = km.out$cluster, pch = 19)
 
 par(mfrow=c(1,1))
 
@@ -156,9 +156,10 @@ ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = eicosenoic, fill = as.fa
 
 par(mfrow=c(1,2))
 
+
 # macro aree per cluster
-barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),1), beside = T, legend = T, main = "proporzione relativa alle macro aree") # somma macro.aree fa 1
-barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),2), beside = T, legend = T, main = "proporzione relativa ai cluster")
+barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),1), beside = T, legend = T, main = "proporzione relativa alle macro aree", col = 2:4) # somma macro.aree fa 1
+barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),2), beside = T, legend = T, main = "proporzione relativa ai cluster", col = 2:4)
 
 # cluster 3 è composto solamente da aree del sud
 # il cluster 2 comprende la maggior parte degli oli dal centro nord
@@ -172,21 +173,15 @@ barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),2), beside = T, le
 # solo gli oli del sud sono presenti in tutti e 4 i cluster, quindi hanno caratteristiche più diversivficate tra loro
 
 
-
-
-
 # regione per cluster
-barplot(prop.table(table(oliveoil$region, km.out$cluster),1), beside = T, legend = T, main = "proporzione relativa alle regioni") #
-barplot(prop.table(table(oliveoil$region, km.out$cluster),2), beside = T, legend = T, main = "proporzione relativa ai cluster") #
+barplot(prop.table(table(oliveoil$region, km.out$cluster),1), beside = T, legend = T, main = "proporzione relativa alle regioni", col = 2:6) #
+barplot(prop.table(table(oliveoil$region, km.out$cluster),2), beside = T, legend = T, main = "proporzione relativa ai cluster", col = 2:6) #
 
 # meglio questi
-barplot(prop.table(table(km.out$cluster, oliveoil$region),1), beside = T, legend = T, main = "proporzione relativa alle regioni") # 
-barplot(prop.table(table(km.out$cluster, oliveoil$region),2), beside = T, legend = T, main = "proporzione relativa ai cluster") #
+barplot(prop.table(table(km.out$cluster, oliveoil$region),1), beside = T, legend = T, main = "proporzione relativa alle regioni", col = 2:6) # 
+barplot(prop.table(table(km.out$cluster, oliveoil$region),2), beside = T, legend = T, main = "proporzione relativa ai cluster", col = 2:6) #
 
 par(mfrow=c(1,1))
-
-
-
 
 
 
