@@ -23,3 +23,8 @@ ggplot(oliveoil, aes(x = as.factor(region), y = arachidic)) + geom_boxplot() + s
 ggplot(oliveoil, aes(x = as.factor(region), y = eicosenoic)) + geom_boxplot() + stat_summary(fun = mean, geom = "point", shape = 18, size = 1, color = "red")
 
 
+
+pairs(oliveoil[,3:10])
+ggcorrplot(cor(oliveoil[,3:10]), type = "lower", lab = TRUE)
+
+
