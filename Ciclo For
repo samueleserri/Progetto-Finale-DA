@@ -1,9 +1,0 @@
-library(pdfCluster)
-data("oliveoil")
-
-
-oliveoil[,3:10] <- oliveoil[,3:10]+1
-
-for (i in 1:nrow(oliveoil)){
-  oliveoil[i,3:10] <- oliveoil[i,3:10]/sum(oliveoil[i,3:10])
-}
