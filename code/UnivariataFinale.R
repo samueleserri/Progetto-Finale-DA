@@ -14,7 +14,7 @@ for (i in 1:nrow(oliveoil)){
 # usando percentuali
 #Distribuzioni Var. Quant.
 display_summary_and_var <- function(variabile){
-  c(summary(variabile * 100), 
+  c(summary(variabile), 
     var = var(variabile, na.rm = T), 
     sd = sd(variabile, na.rm = T),
     sk = skewness(variabile, na.rm = T))
