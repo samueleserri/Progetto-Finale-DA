@@ -8,4 +8,4 @@ for (i in 1:nrow(oliveoil)){
 }
 
 oliveALR <- -log(oliveoil[,-c(1,2,6)]/oliveoil[,6])
-oliveALR <- cbind(oliveoil[,1:2], temp)
+oliveALR <- cbind(oliveoil[,1:2], oliveALR)
