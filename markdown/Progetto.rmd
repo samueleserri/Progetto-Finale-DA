@@ -1,0 +1,187 @@
+---
+title: "Progetto dataset oliveoil - Gruppo T"
+output: word_document
+date: "2024-06-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Abbiamo analizzato il dataset oliveoil contenuto nel pacchetto pdfCluster.
+Contenete dati relativi alla composizione chimica di diversi oli d'oliva provenienti da diverse macro aree e regioni Italiane.
+
+
+### Librerie necessarie
+```{r}
+library(cluster)
+library(ggplot2)
+library(ggcorrplot)
+library(pdfCluster)
+library(dbscan)
+library(compositions)
+library(reshape2)
+```
+
+
+### Funzioni usate nel progetto
+```{r}
+# Funzione per le Variabili Quantitative
+display_summary_and_var <- function(variabile){
+  c(summary(variabile), 
+  var = var(variabile, na.rm = T), 
+  sd = sd(variabile, na.rm = T),
+  sk = skewness(variabile, na.rm = T))
+}
+
+# Funzione per le Variabili Qualitative
+display_table <- function(variabile, titolo){
+  DistAs <- table(variabile)
+  DistRe <- prop.table(table(variabile))
+  barplot(prop.table(table(variabile)), main = titolo)
+  print(rbind(DistAs, DistRe))
+}
+```
+
+
+## Import del dataset e pulizia dei dati
+
+Si decide di normalizzare i dati nel seguente modo:
+$$ y_{ij}=\frac{x_{ij}+1}{\sum_{j=3}^{10} (x_{ij}+1)}  \;\;\;\;,\; \forall j \; \text{ colonna} , \forall i \; \text{ riga}$$
+
+Questo perché i dati sono di natura compositiva, infatti ogni riga somma circa a 10000 e  quindi possono essere visti come la percentuale di un particolare acido nell'olio
+Dalla formula si nota che ad ogni osservazione è stato sommato 1 perché nei dati originali ci sono degli zeri dovuti alle misurazioni al di sotto del livello di sensibilità degli strumenti con la quale è stata effettuata l'analisi
+
+```{r}
+library(pdfCluster)
+data("oliveoil")
+str(oliveoil)
+
+oliveoil[,3:10] <- oliveoil[,3:10]+1
+for (i in 1:nrow(oliveoil)){
+  oliveoil[i,3:10] <- oliveoil[i,3:10]/sum(oliveoil[i,3:10])
+}
+```
+
+
+## Anilisi univariata e bivariata del dataset
+
+PUCCIO
+
+
+## Correlazione tra gli acidi
+
+```{r}
+ggcorrplot(cor(oliveoil[,3:10]), type = "lower", lab = TRUE)
+```
+
+Notiamio che le variabili con correlazione maggiore sono
+-  palmitic palmitoleic
+-  oleic palmitic
+-  oleic palmitoleic
+-  linoleic palmitoleic
+-  linoleic oleic
+-  arachidic linolenic
+-  eicosenoic palmitic
+-  eicosenoic linolenic
+
+analizzeremo in seguito queste coppie di variabili nel dettaglio.
+
+
+## Cluster Analysis
+
+Abbiamo utilizzato tre diversi algoritmi di clusterizzazione:
+- k-means
+- PAM
+- DBSCAN
+
+
+### K-Means
+
+K-Means è un metodo di raggruppamento in cluster che misura le distanze dei punti di un cluster dal suo centro e cerca di minimizzarla.
+L'algoritmo prende in input il dataset e il numero di cluster voluto e opera nel seguente modo:
+1. si sceglie K punti casuali diversi dai punti del dataset che sono  i centroidi dei  cluster
+2. si associa ogni dato al centroide più vicino
+3. per ogni gruppo si trova il punto medio che diventerà il nuovo centroide di quel gruppo
+4. itero dal punto 2 fino a quando nessun dato cambia gruppo tra un'iterazione e l'altra
+
+L'algoritmo viene implementato in R attraverso la funzione kmeans()
+
+Per la scelta del miglior K usiamo il metodo elbow:
+Si prova a implementare k-means con diversi valori di K, e per ognuno si calcola la withinss, ovvero la somma dei quadrati delle distanze tra i punti e il centro del cluster a cui appartengono.
+Quindi si fa il plot dei valori ottenuti e si sceglie il miglior compromesso tra una bassa withinss e un numero di cluster adeguato
+
+
+```{r}
+withins <- c(1:9)
+for (i in 1:9){
+  km.out <- kmeans(oliveoil[, 3:10], centers = i, nstart = 15)
+  withins[i] <- km.out$tot.withinss
+}
+plot(1:9, withins)
+
+# dal grafico si nota che il numero migliore di cluster è 3 o 4
+
+# si procede con l'implementazione di kmeans con K=4
+km.out <- kmeans(oliveoil[, 3:10], centers=4, nstart = 15)
+```
+
+
+Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
+
+```{r}
+par(mfrow=c(3,3))
+
+# palmitic palmitoleic
+plot(oliveoil$palmitic, oliveoil$palmitoleic, col = km.out$cluster, pch = 19)
+
+# oleic palmitic
+plot(oliveoil$oleic, oliveoil$palmitic, col = km.out$cluster, pch = 19)
+
+# oleic palmitoleic
+plot(oliveoil$oleic, oliveoil$palmitoleic, col = km.out$cluster, pch = 19)
+
+# linoleic palmitoleic
+plot(oliveoil$linoleic, oliveoil$palmitoleic, col = km.out$cluster, pch = 19)
+
+# linoleic oleic
+plot(oliveoil$palmitoleic, oliveoil$linoleic, col = km.out$cluster, pch = 19)
+
+# arachidic linolenic
+plot(oliveoil$linolenic, oliveoil$arachidic, col = km.out$cluster, pch = 19)
+
+# eicosenoic palmitic
+plot(oliveoil$palmitic, oliveoil$eicosenoic, col = km.out$cluster, pch = 19)
+
+# eicosenoic linolenic
+plot(oliveoil$linolenic, oliveoil$eicosenoic, col = km.out$cluster, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+Notiamo che l'acido oleico i plot con l'acido oleico sono qulli in cui la divisione tra cluster è meglio riuscita, questo perché esso è il componente principale degli oli analizzati
+
+
+
+
+#### Variabile `Attrition_Flag`
+
+```{r}
+#banche$Attrition_Flag <- factor(banche$Attrition_Flag)
+#display_table(banche$Attrition_Flag, "Attrition_Flag")
+```
+
+Si nota XX
+
+
+
+#### Variabile `SaleCondition`
+
+```{r}
+#display_table(case$SaleCondition, "condizioni di vendita")
+```
+
+Si nota XX
+
+
+
