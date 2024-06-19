@@ -163,25 +163,143 @@ Notiamo che l'acido oleico i plot con l'acido oleico sono qulli in cui la divisi
 
 
 
-
-#### Variabile `Attrition_Flag`
+#### Variabile `palmitic`
 
 ```{r}
-#banche$Attrition_Flag <- factor(banche$Attrition_Flag)
-#display_table(banche$Attrition_Flag, "Attrition_Flag")
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = palmitic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 Si nota XX
 
 
-
-#### Variabile `SaleCondition`
+#### Variabile `palmitoleic`
 
 ```{r}
-#display_table(case$SaleCondition, "condizioni di vendita")
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = palmitoleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 Si nota XX
+
+
+#### Variabile `stearic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = stearic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+#### Variabile `oleic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = oleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+#### Variabile `linoleic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = linoleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+#### Variabile `linolenic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = linolenic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+#### Variabile `arachidic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = arachidic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+#### Variabile `eicosenoic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = eicosenoic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+#### Variabile `macro.area`
+
+```{r}
+par(mfrow=c(1,2))
+
+barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),1), beside = T, legend = T, main = "proporzione relativa alle macro aree", col = 2:4)
+barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),2), beside = T, legend = T, main = "proporzione relativa ai cluster", col = 2:4)
+
+par(mfrow=c(1,2))
+```
+
+
+
+Il cluster 3 è composto solamente da aree del sud.
+Il cluster 2 comprende la maggior parte degli oli dal centro nord.
+Il cluster 1 comprendesolamente oli dal sud e dalla sardegna.
+Anche se in proporzione i 3 oli sono vicini, si vede dal primo grafico che il cluster 4 comprende la gran pare deglio oli provenienti dalla sardegna.
+
+Gli oli del sud sono per il 40% nel cluster 1, il 10% nel cluster 2, il 20% nel 3 e il 30% nel 4.
+Quelli della sardegna sono il 30% nel gluster 1 ,e il 70% nle 4, mentre quelli del centro nord sono per l'80% nel 2 ,e il 20% nel 4.
+
+Solo gli oli del sud sono presenti in tutti e 4 i cluster, quindi hanno caratteristiche più diversivficate tra loro.
+
+
+#### Variabile `region`
+
+```{r}
+par(mfrow=c(1,2))
+
+barplot(prop.table(table(km.out$cluster, oliveoil$region),1), beside = T, legend = T, main = "proporzione relativa alle regioni", col = 2:5) 
+barplot(prop.table(table(km.out$cluster, oliveoil$region),2), beside = T, legend = T, main = "proporzione relativa ai cluster", col = 2:5)
+
+par(mfrow=c(1,1))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+
+```
+
+
+
+
 
 
 
