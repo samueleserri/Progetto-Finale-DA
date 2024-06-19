@@ -82,9 +82,30 @@ par(mfrow=c(1,2))
 barplot(prop.table(table(oliveALR$macro.area, pam.out$cluster),1), beside = T, legend = T, main = "proporzione relativa alle macro aree", col = 2:4) # somma macro.aree fa 1
 barplot(prop.table(table(oliveALR$macro.area, pam.out$cluster),2), beside = T, legend = T, main = "proporzione relativa ai cluster", col = 2:4)
 
+confusion_matrix <- table(Cluster = pam.out$cluster, Aree = oliveoil$macro.area)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Aree, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
 # meglio questi
 barplot(prop.table(table(pam.out$cluster, oliveALR$region),1), beside = T, legend = T, main = "proporzione relativa alle regioni", col = 2:7) # 
 barplot(prop.table(table(pam.out$cluster, oliveALR$region),2), beside = T, legend = T, main = "proporzione relativa ai cluster", col = 2:7) #
+
+confusion_matrix_regioni <- table(Cluster = pam.out$cluster, Aree = oliveoil$region)
+ggplot(data = as.data.frame(as.table(confusion_matrix_regioni)), aes(x = Cluster, y = Aree, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
 
 par(mfrow=c(1,1))
 
