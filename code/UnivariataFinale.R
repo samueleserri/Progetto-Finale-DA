@@ -10,8 +10,6 @@ for (i in 1:nrow(oliveoil)){
 
 #----------------
 
-# Uguale a quello di prima ma ho moltiplicato per 100 perchè tecnicamente stiamo 
-# usando percentuali
 #Distribuzioni Var. Quant.
 display_summary_and_var <- function(variabile){
   c(summary(variabile), 
