@@ -13,7 +13,7 @@ Contenete dati relativi alla composizione chimica di diversi oli d'oliva proveni
 
 
 ### Librerie necessarie
-```{r}
+```{r results = 'hide'}
 library(cluster)
 library(ggplot2)
 library(ggcorrplot)
@@ -126,7 +126,6 @@ plot(1:9, withins)
 set.seed(17)
 km.out <- kmeans(oliveoil[, 3:10], centers=4, nstart = 15)
 str(km.out)
-km.out
 ```
 
 
@@ -251,14 +250,18 @@ Oltre ai valori che tendono allo zero le distribuzioni in cluster sembrano quant
 #### Variabile `macro.area` nei cluster
 
 ```{r}
-par(mfrow=c(1,2))
 
 prop.table(table(oliveoil$macro.area, km.out$cluster),1)
 
-barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),1), beside = T, legend = T, main = "Poporzione all'interno dei cluster", col = 2:4)
-barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),2), beside = T, legend = T, main = "", col = 2:4)
+barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4)
+legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, km.out$cluster),1)
+), fill = 2:5, cex = 0.8, bty = "n")
 
-par(mfrow=c(1,2))
+barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),2), beside = T, legend = F, main = "", col = 2:4)
+legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, km.out$cluster),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+
+
 ```
 
 Il cluster 4 è composto solamente da aree del sud.
@@ -295,8 +298,14 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Ar
 ```{r}
 prop.table(table(km.out$cluster, oliveoil$region),1)
 
-barplot(prop.table(table(km.out$cluster, oliveoil$region),1), beside = T, legend = T, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.50) 
-barplot(prop.table(table(km.out$cluster, oliveoil$region),2), beside = T, legend = T, main = "", col = 2:5, cex.names = 0.50)
+barplot(prop.table(table(km.out$cluster, oliveoil$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(prop.table(table(km.out$cluster, oliveoil$region),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(km.out$cluster, oliveoil$region),2), beside = T, legend = F, main = "", col = 2:5, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(prop.table(table(km.out$cluster, oliveoil$region),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+
 ```
 
 
@@ -330,11 +339,35 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
 
 
 
+
 ### PAM
+L'algoritmo PAM prende in input una matrice di dati numerica, un intero k che corrisponde al numero di cluster e una metrica. PAM opera nel seguente modo:
 
-spiegazione
+1. Si selezionano k punti (medoidi) tra i punti presenti nel dataset e si associa ogni punto al medoide più vicino secondo la metrica selezionata.
 
-Si decide di testare l'algoritmo PAM con le due distanze e con diversi valori di K per scegliere i parametri che creano i cluster migliori
+2. Si selezionano in modo casuale nuovi medoidi
+
+3. Si calcola la somma di tutte le distanze tra ogni punto e il medoide al quale è associato.Si assoccia ogni punto al nuovo medoide più vicino e si calcola la somma di tutte le distanze tra ogni punto e il nuovo medoide al quale è associato.
+
+4. Se la nuova distanza è minore della vecchia allora si scambiano i medoidi
+
+5. Sitera dal punto 2 fino a quando non ci sono cambiamenti nell'insieme di medoidi.
+
+
+
+#### Distanze
+La divisione in cluster dell'algoritmo PAM dipende dalla funzione di distanza che si decide di utilizzare. Due distanze utilizzate dall'algoritmo sono:
+
+La distanza euclidea: 
+$$
+d_E(p,q) =\Big(\sum_{i = 1}^n (p_i - q_i)^2 \Big)^{\frac{1}{2}}
+$$
+La distanza di Manatthan:
+$$
+d_M(p,q) = \sum_{i = 1}^n |p_i - q_i|
+$$
+
+Si decide di testare l'algoritmo PAM con le due distanze e con diversi valori di K per scegliere i parametri che creano i cluster migliori.
 
 ```{r}
 # DISTANZA MANHATTAN
@@ -359,17 +392,27 @@ legend("topright", legend = c("manhattan", "euclidean"), col = c("red", "blue"),
 ```
 
 Il numero di cluster migliore sembra essere 5.
-La distanza manhattan è nettamente migliore della distanza euclidea a parità di numero di cluster, come si vede dal grafico.
+La distanza manhattan è migliore della distanza euclidea a parità di numero di cluster, come si vede dal grafico.
 
 
 ```{r}
 set.seed(17)
 pam.out<-pam(oliveoil[,3:10], 5, metric="manhattan", stand=TRUE, nstart = 10)
 str(pam.out)
-pam.out
 
-# grafico 
-plot(pam.out, which=2, main="")
+# GRAFICO 
+sil_df <- as.data.frame(silhouette(pam.out)[, 1:3])
+colnames(sil_df) <- c("cluster", "neighbor", "sil_width")
+sil_df$obs <- 1:nrow(sil_df)
+sil_df <- sil_df[order(sil_df$cluster, -sil_df$sil_width),]
+sil_df$obs_ordered <- factor(sil_df$obs, levels = sil_df$obs)
+
+ggplot(sil_df, aes(x = obs_ordered, y = sil_width, fill = factor(cluster))) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = rainbow(5)) +
+  labs(title = "Silhouette Plot", x = "Observation", y = "Silhouette Width") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 ```
 
@@ -408,6 +451,7 @@ plot(oliveoil$linolenic, oliveoil$eicosenoic, col = pam.out$cluster, pch = 19)
 par(mfrow=c(1,1))
 ```
 
+Anche in questo caso i grafici in cui si nota meglio la divisione in cluster sono quelli con l'acido oleico, in quanto questo è altamente correlato con l'acido palmitico e palmitoleico. E ha i valori più alti nel dataset.
 
 
 #### Variabile `palmitic`
@@ -416,7 +460,7 @@ par(mfrow=c(1,1))
 ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = palmitic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+Si nota una buona differenza tra le mediane dei diversi cluster e una bassa varianza all'interno degli stessi. Nel cluster 3 sono raggrupati gli oli con le percentuali maggiori di acido palmitico.
 
 
 #### Variabile `palmitoleic`
@@ -425,7 +469,7 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = palmitoleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+Le osservazioni sono analoghe a quelle relattive all'acido palmitico, il cluster che contiene gli oli con maggior acido palmitoleico è lo stesso che contiene gli oli con il maggior acido palmitico.
 
 
 #### Variabile `stearic`
@@ -434,7 +478,7 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = stearic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+Rispetto ai boxplot ottenuti col metodo k-means osserviamo dai grafici una devianza tra i gruppi maggiore
 
 
 #### Variabile `oleic`
@@ -443,7 +487,7 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = oleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+Osserviamo una grande variabilità tra i cluster, come ottenuto in k-means.
 
 
 #### Variabile `linoleic`
@@ -452,7 +496,7 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = linoleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+Grande variabilità tra i cluster. I cluster 3 e 4 hanno una mediana vicina, si osservano tuttavia diversi valori outliers nel cluster 4. 
 
 
 #### Variabile `linolenic`
@@ -461,8 +505,7 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = linolenic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
-
+Anche qui come nel caso dell'acido stearico osserviamo che l'algoritmo PAM rispwtto a k-means individua dei cluster con una variabilità maggiore. In k-means le mediane sono vicine tra di loro in tutti i cluster, con PAM si osserva per esempi come nel cluster 5 vi siano oli con percentuali molto prossime allo zero di acido linolenico e nel cluster 1 oli con percentuali intorno allo 0.005. La presenza di acido linolenico è molto bassa il massimo è minore di 0.008.
 
 #### Variabile `arachidic`
 
@@ -470,7 +513,7 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = arachidic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+Anche per l'acido arachidico si nota una grande variabilità tra i cluster, cluster 5 contiene oli con percentali prossime allo zero.
 
 
 #### Variabile `eicosenoic`
@@ -479,21 +522,30 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = eicosenoic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+Cluster 1 e 3 sono gli unici nei quali la mediana si discosta significativamente dallo zero. 
 
+Considerazioni generali sui boxplot: si nota che la divisione in cluster dell'algoritmo PAM fornisce più informazioni dei cluster prodotti da k-means per le variabili stearico, arachidico e linolenico.
+In k-means le le mediane dei cluster di queste variabili sono tutte vicine
+Mentre i cluster di Pam hanno una devianza tra i gruppi significativa.
 
 
 
 #### Variabile `macro.area`
 
+
 ```{r}
-par(mfrow=c(1,2))
+prop.table(table(oliveoil$macro.area, pam.out$cluster),1)
 
-barplot(prop.table(table(oliveoil$macro.area, pam.out$cluster),1), beside = T, legend = T, main = "proporzione relativa alle macro aree", col = 2:4)
-barplot(prop.table(table(oliveoil$macro.area, pam.out$cluster),2), beside = T, legend = T, main = "proporzione relativa ai cluster", col = 2:4)
+barplot(prop.table(table(oliveoil$macro.area, pam.out$cluster),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4, cex.names = 0.70) 
+legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, pam.out$cluster),1)
+), fill = 2:5, cex = 0.8, bty = "n")
 
-par(mfrow=c(1,2))
+barplot(prop.table(table(oliveoil$macro.area, pam.out$cluster),2), beside = T, legend = F, main = "", col = 2:4, cex.names = 0.70)
+legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, pam.out$cluster),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+
 ```
+
 
 
 Confusion Matrix:
@@ -517,17 +569,20 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Ar
 #### Variabile `region`
 
 ```{r}
-par(mfrow=c(1,2))
+prop.table(table(pam.out$cluster, oliveoil$region),1)
 
-barplot(prop.table(table(pam.out$cluster, oliveoil$region),1), beside = T, legend = T, main = "proporzione relativa alle regioni", col = 2:6) 
-barplot(prop.table(table(pam.out$cluster, oliveoil$region),2), beside = T, legend = T, main = "proporzione relativa ai cluster", col = 2:6) 
+barplot(prop.table(table(pam.out$cluster, oliveoil$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:6, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveoil$region),1)), fill = 2:5, cex = 0.8, bty = "n")
 
-par(mfrow=c(1,1))
+
+barplot(prop.table(table(pam.out$cluster, oliveoil$region),2), beside = T, legend = F, main = "", col = 2:6, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveoil$region),1)), fill = 2:5, cex = 0.8, bty = "n")
+
 ```
 
 
-spiegazione
 
+Confusion Matrix: 
 
 ```{r}
 confusion_matrix <- table(Cluster = oliveoil$region, Regioni = pam.out$cluster)
@@ -542,6 +597,19 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -567,8 +635,6 @@ set.seed(17)
 
 db.out <- dbscan(oliveoil[,3:10], eps = 0.013, minPts = 18)
 str(db.out)
-db.out
-
 ```
 
 
@@ -688,8 +754,12 @@ Si nota XX
 ```{r}
 prop.table(table(db.out$cluster, oliveoil$macro.area),1)
 
-barplot(prop.table(table(db.out$cluster, oliveoil$macro.area),1), beside = T, legend = T, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.50) 
-barplot(prop.table(table(db.out$cluster, oliveoil$macro.area),2), beside = T, legend = T, main = "", col = 2:5, cex.names = 0.50)
+barplot(prop.table(table(oliveoil$macro.area, db.out$cluster),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4, cex.names = 0.70) 
+legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, db.out$cluster),1)), fill = 2:4, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(oliveoil$macro.area, db.out$cluster),2), beside = T, legend = F, main = "", col = 2:4, cex.names = 0.70)
+legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, db.out$cluster),1)), fill = 2:5, cex = 0.8, bty = "n")
+
 ```
 
 
@@ -716,9 +786,14 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Ar
 
 ```{r}
 prop.table(table(db.out$cluster, oliveoil$region),1)
+counts <- prop.table(table(db.out$cluster, oliveoil$region), 1)
 
-barplot(prop.table(table(db.out$cluster, oliveoil$region),1), beside = T, legend = T, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.50) 
-barplot(prop.table(table(db.out$cluster, oliveoil$region),2), beside = T, legend = T, main = "", col = 2:5, cex.names = 0.50)
+barplot(prop.table(table(db.out$cluster, oliveoil$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(counts), fill = 2:5, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(db.out$cluster, oliveoil$region),2), beside = T, legend = F, main = "", col = 2:5, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(counts), fill = 2:5, cex = 0.8, bty = "n")
+
 ```
 
 
@@ -752,7 +827,7 @@ A causa della natura compositiva dei dati, ovvero per il fatto che essi sommano 
 Questa trasformazione consiste nel dividere ogni colonna del dataset per una colonna scelta arbitrariamente, e di applicare al risultato l'opposto del logatirmo: come nella seguente formula:
 
 
-$$ y_{ij}= -log(\frac{x_{ij}}{x_{ik}}) \;\;\;\;,\; \text{ con } k \text{ colonna fissata} , \forall i \; \text{ riga}$$
+$$ y_{ij}= -log(\frac{x_{ij}}{x_{ik}}) \;\;\;\;,\; \forall j \not=k \; \text{ colonna}, \forall i \; \text{ riga} \text{, con k fissata}$$
 
 La colonna k viene rimossa in quanto il rapporto $$\frac{x_{ij}}{x_{ik}} $$ è sempre 1 e di conseguenza si ottengono valori nulli una volta applicato il logaritmo
 
@@ -775,3 +850,4 @@ oliveALR <- cbind(oliveoil[,1:2], oliveALR)
 
 
 ### DB SCAN con ALR
+
