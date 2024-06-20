@@ -255,11 +255,11 @@ prop.table(table(oliveoil$macro.area, km.out$cluster),1)
 
 barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4)
 legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, km.out$cluster),1)
-), fill = 2:5, cex = 0.8, bty = "n")
+), fill = 2:4, cex = 0.8, bty = "n")
 
 barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),2), beside = T, legend = F, main = "", col = 2:4)
 legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, km.out$cluster),1)
-), fill = 2:5, cex = 0.8, bty = "n")
+), fill = 2:4, cex = 0.8, bty = "n")
 
 
 ```
@@ -538,11 +538,11 @@ prop.table(table(oliveoil$macro.area, pam.out$cluster),1)
 
 barplot(prop.table(table(oliveoil$macro.area, pam.out$cluster),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4, cex.names = 0.70) 
 legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, pam.out$cluster),1)
-), fill = 2:5, cex = 0.8, bty = "n")
+), fill = 2:4, cex = 0.8, bty = "n")
 
 barplot(prop.table(table(oliveoil$macro.area, pam.out$cluster),2), beside = T, legend = F, main = "", col = 2:4, cex.names = 0.70)
 legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, pam.out$cluster),1)
-), fill = 2:5, cex = 0.8, bty = "n")
+), fill = 2:4, cex = 0.8, bty = "n")
 
 ```
 
@@ -572,11 +572,11 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Ar
 prop.table(table(pam.out$cluster, oliveoil$region),1)
 
 barplot(prop.table(table(pam.out$cluster, oliveoil$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:6, cex.names = 0.70, las=2) 
-legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveoil$region),1)), fill = 2:5, cex = 0.8, bty = "n")
+legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveoil$region),1)), fill = 2:6, cex = 0.8, bty = "n")
 
 
 barplot(prop.table(table(pam.out$cluster, oliveoil$region),2), beside = T, legend = F, main = "", col = 2:6, cex.names = 0.70, las=2)
-legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveoil$region),1)), fill = 2:5, cex = 0.8, bty = "n")
+legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveoil$region),1)), fill = 2:6, cex = 0.8, bty = "n")
 
 ```
 
@@ -767,11 +767,25 @@ I punti di "noise" rimangono quelli con li range maggiore anche se il cluster 1 
 Paragonando le distribuzioni in boxplot di kmeans e dbscan si notano delle corrispondenze tra le due divisioni in cluster:
 - Notiamo che molti dei vaori estremi sei vari cluster di kmenas vengono assegnati all' insieme dei punti di "noise".
 - Soprattutto il cluster 4 di kmeans sembra contenere valori che dbscan conta come punti di "noise".
-[esempio paragone con palmitico e palmitoleico]
 
-- È presente una grande somiglianza inoltre tra i cluster 2 e 3 di kmeans e i cluster 1 e 2 di dbscan.
-[esempio paragone con 2 acidi a cazzo]
+Come si vede nel caso dell'acido palmitico 
 
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = palmitic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE) + labs( title ="Palmitico DBSCAN")
+
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = palmitic, fill = as.factor(km.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE) + labs( title ="Palmitico k-means")
+```
+
+e palmitoleico
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = palmitoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE) + labs( title ="Palmitoleico DBSCAN")
+
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = palmitoleic, fill = as.factor(km.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE) + labs( title ="Palmitoleico k-means")
+```
+
+
+- È presente una grande somiglianza inoltre tra i cluster 2 e 3 di kmeans e i cluster 1 e 2 di dbscan, come si vede anche nei grafici sopra.
 
 
 
@@ -786,7 +800,7 @@ barplot(prop.table(table(oliveoil$macro.area, db.out$cluster),1), beside = T, le
 legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, db.out$cluster),1)), fill = 2:4, cex = 0.8, bty = "n")
 
 barplot(prop.table(table(oliveoil$macro.area, db.out$cluster),2), beside = T, legend = F, main = "", col = 2:4, cex.names = 0.70)
-legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, db.out$cluster),1)), fill = 2:5, cex = 0.8, bty = "n")
+legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, db.out$cluster),1)), fill = 2:4, cex = 0.8, bty = "n")
 
 ```
 
@@ -872,6 +886,7 @@ oliveALR <- cbind(oliveoil[,1:2], oliveALR)
 
 
 ### K-means con ALR
+
 
 
 ### PAM con ALR
@@ -971,6 +986,13 @@ legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, pam.o
 
 ```
 
+Dai grafici si nota un netto miglioramento nel raggruppamento dei cluster di pam ALR ripetto agli altri algoritmi, se confrontati con i gruppi creati dalle macro areee.
+Gli oli della sardegna vengono inseriti interamente nel cluster 4.
+Gli oli del sud vengono inseriti per il 30% nel cluster 1 e 67% nel 3
+Gli oli del centro nord invece non sono ben identificati e vengono smistati nei cluster 2, 4, 5 e 6
+
+Per quanto riguarda i cluster invece, il primo e il terzo contegono oli provenienti quasi escusivamente dal sud
+Il quinto e il sesto contengono escusivamente oli del centro nord
 
 
 Confusion Matrix:
@@ -996,15 +1018,25 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Ar
 ```{r}
 prop.table(table(pam.out$cluster, oliveALR$region),1)
 
-barplot(prop.table(table(pam.out$cluster, oliveALR$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:6, cex.names = 0.70, las=2) 
-legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveALR$region),1)), fill = 2:5, cex = 0.8, bty = "n")
+barplot(prop.table(table(pam.out$cluster, oliveALR$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:7, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveALR$region),1)), fill = 2:7, cex = 0.8, bty = "n")
 
 
-barplot(prop.table(table(pam.out$cluster, oliveALR$region),2), beside = T, legend = F, main = "", col = 2:6, cex.names = 0.70, las=2)
-legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveALR$region),1)), fill = 2:5, cex = 0.8, bty = "n")
+barplot(prop.table(table(pam.out$cluster, oliveALR$region),2), beside = T, legend = F, main = "", col = 2:7, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveALR$region),1)), fill = 2:7, cex = 0.8, bty = "n")
 
 ```
 
+Oltre alle precedenti osservazioni sulla macro area Sardegna (che sono ocnfermate dall'analisi riapetto alle regioni) si nota che:
+Gli oli della puglia sud vengono inseriti interamente nel cluster 3
+Gli oli dell'umbria vengono inseriti interamente nel custer 2, che non contiene oli provenienti da altre regioni
+Gli oli della liguria est sono smistati in diversi cluster
+
+Guardando i cluster invece possiamo affermare che il cluster 1 contiene oli della puglia nord, calabria e sicilia
+il cluster 2 contiene oli della dell'umbria e in parte della puglia nord
+il cluster 3 contiene oli della puglia sud, e in parte della sicilia
+il cluster 4 contiene oli della sardegna e liguria est 
+il cluster 5 e 6 contiene esclusivamente oli della liguria
 
 
 Confusion Matrix: 
