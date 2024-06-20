@@ -546,6 +546,16 @@ legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, pam.o
 
 ```
 
+Il cluster 5 è composto esclusivamente da oli del centro nord
+il cluster 4 è composto all'80% circa da oli della Sardegna e per il resto da oli del centro-nord.
+il cluster 3 è composto esclusivamente da oli del sud.
+Il cluster 2 è composto per oltre il 90% da oli del centro nord e i rimanenti sono oli del sud.
+Il cluster 1 è composto al 92% da oli del sud e il resto da oli del centro nord.
+
+Gli oli del sud si distribuiscono soprattutto nel cluster 3 (66%). I rimanenti si dividono tra cluster 1 (32%) e 2 (12%).
+Gli oli della Sardegna si trovano esclusivamente nel cluster 4.
+Gli oli del centro nord sono presenti in tutti i cluster tranne il 3.
+In particolare al 5% nel cluster 1, al 44% nel cluster 2, 11% nel cluster 4 e 39% nel cluster 5.
 
 
 Confusion Matrix:
@@ -565,7 +575,6 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Ar
 ```
 
 
-
 #### Variabile `region`
 
 ```{r}
@@ -579,6 +588,22 @@ barplot(prop.table(table(pam.out$cluster, oliveoil$region),2), beside = T, legen
 legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveoil$region),1)), fill = 2:6, cex = 0.8, bty = "n")
 
 ```
+
+Gli oli della puglia del nord si trovano per l'84% nel cluster 1 e per il 16% 
+Gli oli della calabria si trovano al 96 % nel cluster 1 e i rimanenti nel cluster 3.
+Gli oli della puglia del sud al 99% nel cluster 3.
+Gli oli della Sardegna Inland e Coast finiscono entrambi nel cluster 4 al 100%
+Gli oli della liguria dell est sono divisi tra cluster 1 (18%), cluster 2 (30%), cluster 4 (34%) e 5 (18%) solo il cluster 3 non presenta oli della liguria est.
+Gli oli della liguria ovest si trovano tutti nel cluster 5.
+Gli oli dell'umbria si trovano tutti nel cluster 2.
+
+Il cluster 1 è composto al 19% da oli della puglia del nord al 47% da oli della calabria e al 24% da oli della sicilia, vi è circa un 1% di oli della liguria dell'est.
+IL cluster 2 è composto per il 5% da oli della puglia del nord al 21% da oli della liguria dell'est e al 73% da oli dell'Umbria.
+Il cluster 3 é composto al 95% da oli della puglia del sud, 3% Sicilia e 2% Calabria.
+Il cluster 4 è composto al 57% da Oli della Sardegna inland, al 29% da oli della Sardegna coast e per il resto da oli della liguria dell'est.
+Il cluster 5 è composto al 15% da oli della liguria dell'est e all'85% da oli della liguria dell'ovest.
+
+Si puòaffermare che gli oli della liguria dell'est si trovano in 4 cluster su 5.
 
 
 
@@ -804,6 +829,15 @@ legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, db.ou
 
 ```
 
+Gli oli del sud sono principalmente stati raggruppati nel cluster 3, con più di 75% delle osservazioni totali di oli del sud.
+Gli oli della sardegna sono invece presenti per la maggiorparte nel cluster 3 e nel cluster 2 in quantità minore.
+Gli oli del Centro nord sono infine quasi completamente nel cluster 1.
+Infine si nota che l'insieme dei punti di "noise" è composto principalmente da oli del sud.
+CONFRONTO CON KMENAS
+Si nota che:
+- gli oli del centro nord in entrambi i casi sono quasi esclusivamente in un singolo cluster
+-  Gli oli della Sardegna hanno anche distribuzioni simili, sono finfatti divisi principalmente tra due cluser per entrambi i metodi
+- invece gli oli del sud sono distribuiti più uniformemente con kmeans che con dbscan.
 
 
 Confusion Matrix:
@@ -839,7 +873,16 @@ legend("topright", legend = rownames(counts), fill = 2:5, cex = 0.8, bty = "n")
 ```
 
 
-spiegazione
+Fatta eccezione del cluster 3 che è quasi esclusivamente composto da oli prodotti nella Sardegna inland, nei cluster sono presenti oli da più regioni.
+In particolare:
+- oli provenienti dalla Puglia nord, Liguria del est, Liguria dell'Ovest e Umbria sono principalmente nel cluster 1.
+-  oli provenienti dalla Calabria, Puglia sud e Sardegna costa sono in granparte nel cluster 2.
+-  gli oli che vengono considerati come punti di "noise" invece sono presenti nella maggiorparte  delle regioni.
+
+
+Inoltre confrontrando le regioni si evince che:
+- Oli della puglia nord, liguria est, liguria ovest e umbria sono in entrambi i casi principalemente presenti nello stesso cluster.
+- La sardegna inland non condivide più il cluster principalmente con Calbria, Sardegna e Liguria dell'ovest ma adesso ha un cluster composto quasi esclusivamente dai propri oli.
 
 
 ```{r}
@@ -855,8 +898,6 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
-
-
 
 
 
@@ -883,7 +924,17 @@ oliveALR <- -log(oliveoil[,-c(1,2,6)]/oliveoil[,6])
 oliveALR <- cbind(oliveoil[,1:2], oliveALR)
 ```
 
+Si vuole analizzare ora il nuvo dataset oliveALR
 
+```{r}
+ggcorrplot(cor(oliveALR[,3:9]), type = "lower", lab = TRUE)
+```
+
+Dal grafico si vede che le correlazioni ora sono  sempre positive, inoltre le variabili che erano fortemente correlate prima della trasformazione, rimangono fortemente correlate anche dopo la trasformazione logaritmica.
+
+Altre informazioni degne di nota riguardano:
+
+PUCCIO
 
 ### K-means con ALR
 
