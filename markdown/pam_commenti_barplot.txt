@@ -1,0 +1,31 @@
+**macro aree ** 
+
+Il cluster 5 è composto esclusivamente da oli del centro nord
+il cluster 4 è composto all'80% circa da oli della Sardegna e per il resto da oli del centro-nord.
+il cluster 3 è composto esclusivamente da oli del sud.
+Il cluster 2 è composto per oltre il 90% da oli del centro nord e i rimanenti sono oli del sud.
+Il cluster 1 è composto al 92% da oli del sud e il resto da oli del centro nord.
+
+Gli oli del sud si distribuiscono soprattutto nel cluster 3 (66%). I rimanenti si dividono tra cluster 1 (32%) e 2 (12%).
+Gli oli della Sardegna si trovano esclusivamente nel cluster 4.
+Gli oli del centro nord sono presenti in tutti i cluster tranne il 3.
+In particolare al 5% nel cluster 1, al 44% nel cluster 2, 11% nel cluster 4 e 39% nel cluster 5.
+
+
+*** Regioni ***
+Gli oli della puglia del nord si trovano per l'84% nel cluster 1 e per il 16% 
+Gli oli della calabria si trovano al 96 % nel cluster 1 e i rimanenti nel cluster 3.
+Gli oli della puglia del sud al 99% nel cluster 3.
+Gli oli della Sardegna Inland e Coast finiscono entrambi nel cluster 4 al 100%
+Gli oli della liguria dell est sono divisi tra cluster 1 (18%), cluster 2 (30%), cluster 4 (34%) e 5 (18%) solo il cluster 3 non presenta oli della liguria est.
+Gli oli della liguria ovest si trovano tutti nel cluster 5.
+Gli oli dell'umbria si trovano tutti nel cluster 2.
+
+Il cluster 1 è composto al 19% da oli della puglia del nord al 47% da oli della calabria e al 24% da oli della sicilia, vi è circa un 1% di oli della liguria dell'est.
+IL cluster 2 è composto per il 5% da oli della puglia del nord al 21% da oli della liguria dell'est e al 73% da oli dell'Umbria.
+Il cluster 3 é composto al 95% da oli della puglia del sud, 3% Sicilia e 2% Calabria.
+Il cluster 4 è composto al 57% da Oli della Sardegna inland, al 29% da oli della Sardegna coast e per il resto da oli della liguria dell'est.
+Il cluster 5 è composto al 15% da oli della liguria dell'est e all'85% da oli della liguria dell'ovest.
+
+***considerazioni*** 
+Gli oli della liguria dell'est si trovano in 4 cluster su 5.
