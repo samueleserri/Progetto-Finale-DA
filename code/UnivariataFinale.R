@@ -28,13 +28,6 @@ display_table <- function(variabile, titolo){
 
 #----------------
 
-#Possibili Funzioni
-plot(ecdf(oliveoil$linoleic),  verticals=TRUE)
-qqnorm(oliveoil$linoleic)
-qqline(oliveoil$linoleic)
-
-#----------------
-
 par(mfrow = c(1,1))
 
 #Macro Area
