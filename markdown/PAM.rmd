@@ -1,0 +1,590 @@
+---
+title: "Progetto dataset oliveoil - Gruppo T"
+output:
+  word_document: default
+  pdf_document: default
+date: "2024-06-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Abbiamo analizzato il dataset oliveoil contenuto nel pacchetto pdfCluster.
+Contenete dati relativi alla composizione chimica di diversi oli d'oliva provenienti da diverse macro aree e regioni Italiane.
+
+
+### Librerie necessarie
+```{r}
+library(cluster)
+library(ggplot2)
+library(ggcorrplot)
+library(pdfCluster)
+library(dbscan)
+library(compositions)
+library(reshape2)
+```
+
+
+### Funzioni usate nel progetto
+```{r}
+# Funzione per le Variabili Quantitative
+display_summary_and_var <- function(variabile){
+  c(summary(variabile), 
+  var = var(variabile, na.rm = T), 
+  sd = sd(variabile, na.rm = T),
+  sk = skewness(variabile, na.rm = T))
+}
+
+# Funzione per le Variabili Qualitative
+display_table <- function(variabile, titolo){
+  DistAs <- table(variabile)
+  DistRe <- prop.table(table(variabile))
+  barplot(prop.table(table(variabile)), main = titolo)
+  print(rbind(DistAs, DistRe))
+}
+```
+
+
+## Import del dataset e pulizia dei dati
+
+Si decide di normalizzare i dati nel seguente modo:
+$$ y_{ij}=\frac{x_{ij}+1}{\sum_{j=3}^{10} (x_{ij}+1)}  \;\;\;\;,\; \forall j \; \text{ colonna} , \forall i \; \text{ riga}$$
+
+Questo perché i dati sono di natura compositiva, infatti ogni riga somma circa a 10000 e  quindi possono essere visti come la percentuale di un particolare acido nell'olio
+Dalla formula si nota che ad ogni osservazione è stato sommato 1 perché nei dati originali ci sono degli zeri dovuti alle misurazioni al di sotto del livello di sensibilità degli strumenti con la quale è stata effettuata l'analisi
+
+```{r}
+library(pdfCluster)
+data("oliveoil")
+str(oliveoil)
+
+oliveoil[,3:10] <- oliveoil[,3:10]+1
+for (i in 1:nrow(oliveoil)){
+  oliveoil[i,3:10] <- oliveoil[i,3:10]/sum(oliveoil[i,3:10])
+}
+```
+
+
+## Anilisi univariata e bivariata del dataset
+
+PUCCIO
+
+
+## Correlazione tra gli acidi
+
+```{r}
+ggcorrplot(cor(oliveoil[,3:10]), type = "lower", lab = TRUE)
+```
+
+Notiamio che le variabili con correlazione maggiore sono
+-  palmitic palmitoleic
+-  oleic palmitic
+-  oleic palmitoleic
+-  linoleic palmitoleic
+-  linoleic oleic
+-  arachidic linolenic
+-  eicosenoic palmitic
+-  eicosenoic linolenic
+
+analizzeremo in seguito queste coppie di variabili nel dettaglio.
+
+
+## Cluster Analysis
+
+Abbiamo utilizzato tre diversi algoritmi di clusterizzazione:
+- k-means
+- PAM
+- DBSCAN
+
+
+### K-Means
+
+K-Means è un metodo di raggruppamento in cluster che misura le distanze dei punti di un cluster dal suo centro e cerca di minimizzarla.
+L'algoritmo prende in input il dataset e il numero di cluster voluto e opera nel seguente modo:
+1. si sceglie K punti casuali diversi dai punti del dataset che sono  i centroidi dei  cluster
+2. si associa ogni dato al centroide più vicino
+3. per ogni gruppo si trova il punto medio che diventerà il nuovo centroide di quel gruppo
+4. itero dal punto 2 fino a quando nessun dato cambia gruppo tra un'iterazione e l'altra
+
+L'algoritmo viene implementato in R attraverso la funzione kmeans()
+
+Per la scelta del miglior K usiamo il metodo elbow:
+Si prova a implementare k-means con diversi valori di K, e per ognuno si calcola la withinss, ovvero la somma dei quadrati delle distanze tra i punti e il centro del cluster a cui appartengono.
+Quindi si fa il plot dei valori ottenuti e si sceglie il miglior compromesso tra una bassa withinss e un numero di cluster adeguato
+
+
+```{r}
+withins <- c(1:9)
+for (i in 1:9){
+  km.out <- kmeans(oliveoil[, 3:10], centers = i, nstart = 15)
+  withins[i] <- km.out$tot.withinss
+}
+plot(1:9, withins)
+
+# dal grafico si nota che il numero migliore di cluster è 3 o 4
+
+# si procede con l'implementazione di kmeans con K=4
+set.seed(17)
+km.out <- kmeans(oliveoil[, 3:10], centers=4, nstart = 15)
+str(km.out)
+km.out
+```
+
+
+Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
+
+```{r}
+par(mfrow=c(2,2))
+
+# palmitic palmitoleic
+plot(oliveoil$palmitic, oliveoil$palmitoleic, col = km.out$cluster, pch = 19)
+
+# oleic palmitic
+plot(oliveoil$oleic, oliveoil$palmitic, col = km.out$cluster, pch = 19)
+
+# oleic palmitoleic
+plot(oliveoil$oleic, oliveoil$palmitoleic, col = km.out$cluster, pch = 19)
+
+# linoleic palmitoleic
+plot(oliveoil$linoleic, oliveoil$palmitoleic, col = km.out$cluster, pch = 19)
+
+# linoleic oleic
+plot(oliveoil$palmitoleic, oliveoil$linoleic, col = km.out$cluster, pch = 19)
+
+# arachidic linolenic
+plot(oliveoil$linolenic, oliveoil$arachidic, col = km.out$cluster, pch = 19)
+
+# eicosenoic palmitic
+plot(oliveoil$palmitic, oliveoil$eicosenoic, col = km.out$cluster, pch = 19)
+
+# eicosenoic linolenic
+plot(oliveoil$linolenic, oliveoil$eicosenoic, col = km.out$cluster, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+Notiamo che i plot con l'acido oleico sono quelli in cui la divisione tra cluster è meglio riuscita, questo perché esso è il componente principale degli oli analizzati
+
+
+
+#### Variabile `palmitic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = palmitic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota che le differenze tra i cluster ripetto all'acido palmitico sono ben marcate, e presentano pochi valori outlier, la varianza è bassa.
+Il cluster 4 è quello che contiene oli con percentuali di acido palmitico più alte, mentre il secondo le percentuali più basse.
+
+
+#### Variabile `palmitoleic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = palmitoleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Come nell'acido palmitico si nota che le differenze tra i cluster ripetto all'acido palmitoleico sono ben marcate, e presentano più valori outlier, ma la varianza è comunque bassa.
+Il cluster 4 è quello che contiene oli con percentuali di acido palmitoleico più alte, mentre il secondo le percentuali più basse.
+
+
+#### Variabile `stearic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = stearic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota che le mediane sono molto vicine tra loro.
+L'acido stearico ha delle percentuali basse all'interno dell'olio, infatti la differenza tra i cluster è molto meno marcata
+
+
+
+#### Variabile `oleic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = oleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+L'acido oleico è in percentuale il più presente negli oli, le differenze tra i cluster sono le più marcate, come si vede anche dal boxplot
+Le varianze within sono basse e la varianza between è molto elevata
+Il cluster 2 contiene gli oli con la percentuale di acido oleico maggiore, infatti l'olio con meno acido oleico in quel cluster, è composto da almeno il 75%
+
+
+
+#### Variabile `linoleic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = linoleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+La distribuzione dei diversi cluster è molto simile all'acido palmitico e palmitoleico.
+
+
+
+#### Variabile `linolenic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = linolenic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Siccome è uno degli acidi con meno percentuali all'interno degli oli, l'algoritmo di k-menas con la distanza euclidea non separa in modo evidente i cluster rispetto all'acido linoleico.
+Infatti dal grafico si nota come le mediane sono all'incirca alla stessa altezza.
+
+
+#### Variabile `arachidic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = arachidic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Analogamente all'acido precedente non c'è differenza significativa tra cluster rispetto all'acido arachidico. 
+
+
+#### Variabile `eicosenoic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = eicosenoic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota che i cluster 1 e 2 hanno ben individuato gli oli con percentuali di acido eicosenoico prossime allo zero.
+Oltre ai valori che tendono allo zero le distribuzioni in cluster sembrano quantomeno simili
+
+
+#### Variabile `macro.area` nei cluster
+
+```{r}
+par(mfrow=c(1,2))
+
+prop.table(table(oliveoil$macro.area, km.out$cluster),1)
+
+barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),1), beside = T, legend = T, main = "Poporzione all'interno dei cluster", col = 2:4)
+barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),2), beside = T, legend = T, main = "", col = 2:4)
+
+par(mfrow=c(1,2))
+```
+
+Il cluster 4 è composto solamente da aree del sud.
+Il cluster 2 comprende la maggior parte degli oli dal centro nord.
+Il cluster 3 comprende solamente oli dal sud e dalla sardegna.
+Anche se in proporzione i 3 oli sono vicini, si vede dal primo grafico che il cluster 1 comprende la gran pare deglio oli provenienti dalla sardegna.
+
+Gli oli del sud sono per il 44% nel cluster 3, il 13% nel cluster 2, il 22% nel 1 e il 19% nel 4.
+Quelli della sardegna sono il 33% nel cluster 3 ,e il 66% nel 1.
+Mentre quelli del centro nord sono per l'83% nel 2 ,e il 17% nel 1.
+
+Solo gli oli del sud sono presenti in tutti e 4 i cluster, quindi hanno caratteristiche più diversivficate tra loro.
+
+Questo si può vedere anche dalla Confuzion Matrix ovvero:
+
+```{r}
+confusion_matrix <- table(Cluster = oliveoil$macro.area, Aree = km.out$cluster)
+
+table( Aree = km.out$cluster, Cluster = oliveoil$macro.area)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Aree, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Variabile `region` nei cluster
+
+```{r}
+prop.table(table(km.out$cluster, oliveoil$region),1)
+
+barplot(prop.table(table(km.out$cluster, oliveoil$region),1), beside = T, legend = T, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.50) 
+barplot(prop.table(table(km.out$cluster, oliveoil$region),2), beside = T, legend = T, main = "", col = 2:5, cex.names = 0.50)
+```
+
+
+Dai grafici si nota che:
+I cluster 3 e 4 contengono prevelantemente oli provenienti da Puglia Nord, mentre i cluster 1 e 2 contengono oli provenienti da diverse regioni.
+
+Gli oli provenienti da Calabria e Sardegna inland sono in gran parte nel cluster 1
+Gli oli provenienti da Puglia Nord, Liguria e Umbria sono in gran parte nel cluster 2
+Sardegna costa e Sardegna inland sono esclusivamente parte del cluster 1 e 3 rispettivamente. questo indica che gli oli della Sardegna hanno caratteristiche molto differenti tra quelli prodotti sulle coste e quelli prodotti inland
+
+La Sicilia, al contrario, produce oli con caratteristiche molto diversificate, infatti gli oli della sicilia appartengono a tutti i cluster.
+
+Di seguito la confusion matrix:
+
+```{r}
+confusion_matrix <- table(Cluster = oliveoil$region, Regioni = km.out$cluster)
+
+table(Regioni = km.out$cluster, Cluster = oliveoil$region)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Regioni, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Regioni", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+
+
+
+### PAM
+L'algoritmo PAM prende in input una matrice di dati numerica, un intero k che corrisponde al numero di cluster e una metrica. PAM opera nel seguente modo:
+
+*Si selezionano k punti (medoidi) tra i punti presenti nel dataset e si associa ogni punto al medoide più vicino secondo la metrica selezionata.
+
+*Si selezionano in modo casuale nuovi medoidi
+
+*Si calcola la somma di tutte le distanze tra ogni punto e il medoide al quale è associato.
+Si assoccia ogni punto al nuovo medoide più vicino e si calcola la somma di tutte le distanze tra ogni punto e il nuovo medoide al quale è associato.
+
+*Se la nuova distanza è minore della vecchia allora si scambiano i medoidi
+
+*GOTO 2 fino a quando non ci sono cambiamenti nell'insieme di medoidi.
+
+####Distanze
+LA divisione in cluster dell'algoritmo PAM dipende dalla funzione di distanza che si decide di utilizzare. Due distanze popolari sono:
+La distanza euclidea: 
+$$
+d_E(p,q) =\Big(\sum_{i = 1}^n (p_i - q_i)^2 \Big)^{\frac{1}{2}}
+$$
+La distanza di Manatthan:
+$$
+d_M(p,q) = \sum_{i = 1}^n |p_i - q_i|
+$$
+
+Si decide di testare l'algoritmo PAM con le due distanze e con diversi valori di K per scegliere i parametri che creano i cluster migliori.
+
+```{r}
+# DISTANZA MANHATTAN
+larghezza_media_m <- c(1:9)
+for (i in 2:10){
+  pam.out<-pam(oliveoil[,3:10], i, metric="manhattan", stand=TRUE, nstart = 10)
+  larghezza_media_m[i-1] <- pam.out$silinfo$avg.width
+}
+
+# DISTANZA EUCLIDEA
+larghezza_media_e <- c(1:9)
+for (i in 2:10){
+  pam.out<-pam(oliveoil[,3:10], i, metric="euclidean", stand=TRUE, nstart = 10)
+  larghezza_media_e[i-1] <- pam.out$silinfo$avg.width
+}
+
+
+plot(2:10, larghezza_media_m, col = "red", pch = 19)
+points(2:10, larghezza_media_e, col = "blue", pch = 19)
+legend("topright", legend = c("manhattan", "euclidean"), col = c("red", "blue"), pch =19)
+
+```
+
+Il numero di cluster migliore sembra essere 5.
+La distanza manhattan è migliore della distanza euclidea a parità di numero di cluster, come si vede dal grafico.
+
+
+```{r}
+set.seed(17)
+pam.out<-pam(oliveoil[,3:10], 5, metric="manhattan", stand=TRUE, nstart = 10)
+str(pam.out)
+pam.out
+
+# grafico 
+plot(pam.out, which=2, main="")
+
+```
+
+
+
+Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
+
+```{r}
+
+par(mfrow=c(2,2))
+
+# palmitic palmitoleic
+plot(oliveoil$palmitic, oliveoil$palmitoleic, col = pam.out$cluster, pch = 19)
+
+# oleic palmitic
+plot(oliveoil$oleic, oliveoil$palmitic, col = pam.out$cluster, pch = 19)
+
+# oleic palmitoleic
+plot(oliveoil$oleic, oliveoil$palmitoleic, col = pam.out$cluster, pch = 19)
+
+# linoleic palmitoleic
+plot(oliveoil$linoleic, oliveoil$palmitoleic, col = pam.out$cluster, pch = 19)
+
+# linoleic oleic
+plot(oliveoil$palmitoleic, oliveoil$linoleic, col = pam.out$cluster, pch = 19)
+
+# arachidic linolenic
+plot(oliveoil$linolenic, oliveoil$arachidic, col = pam.out$cluster, pch = 19)
+
+# eicosenoic palmitic
+plot(oliveoil$palmitic, oliveoil$eicosenoic, col = pam.out$cluster, pch = 19)
+
+# eicosenoic linolenic
+plot(oliveoil$linolenic, oliveoil$eicosenoic, col = pam.out$cluster, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+
+
+#### Variabile `palmitic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = palmitic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota una buona differenza tra le mediane dei diversi cluster e una bassa varianza all'interno degli stessi. Nel cluster 3 sono raggrupati gli oli con le percentuali maggiori di acido palmitico.
+
+
+#### Variabile `palmitoleic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = palmitoleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Le osservazioni sono analoghe a quelle relattive all'acido palmitico, il cluster che contiene gli oli con maggior acido palmitoleico è lo stesso che contiene gli oli con il maggior acido palmitico.
+
+
+#### Variabile `stearic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = stearic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Rispetto ai boxplot ottenuti col metodo k-means osserviamo dai grafici una devianza tra i gruppi maggiore
+
+
+#### Variabile `oleic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = oleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Osserviamo una grande variabilità tra i cluster, come ottenuto in k-means.
+
+
+#### Variabile `linoleic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = linoleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Grande variabilità tra i cluster. I cluster 3 e 4 hanno una mediana vicina, si osservano tuttavia diversi valori outliers nel cluster 4. 
+
+
+#### Variabile `linolenic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = linolenic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Anche qui come nel caso dell'acido stearico osserviamo che l'algoritmo PAM rispwtto a k-means individua dei cluster con una variabilità maggiore. In k-means le mediane sono vicine tra di loro in tutti i cluster, con PAM si osserva per esempi come nel cluster 5 vi siano oli con percentuali molto prossime allo zero di acido linolenico e nel cluster 1 oli con percentuali intorno allo 0.005. La presenza di acido linolenico è molto bassa il massimo è minore di 0.008.
+
+#### Variabile `arachidic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = arachidic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Anche per l'acido arachidico si nota una grande variabilità tra i cluster, cluster 5 contiene oli con percentali prossime allo zero.
+
+
+#### Variabile `eicosenoic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = eicosenoic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Cluster 1 e 3 sono gli unici nei quali la mediana si discosta significativamente dallo zero. 
+
+
+
+#### Variabile `macro.area`
+
+```{r}
+par(mfrow=c(1,2))
+
+barplot(prop.table(table(oliveoil$macro.area, pam.out$cluster),1), beside = T, legend = T, main = "proporzione relativa alle macro aree", col = 2:4)
+barplot(prop.table(table(oliveoil$macro.area, pam.out$cluster),2), beside = T, legend = T, main = "proporzione relativa ai cluster", col = 2:4)
+
+par(mfrow=c(1,2))
+```
+
+
+Confuzion Matrix:
+
+```{r}
+confusion_matrix <- table(Cluster = oliveoil$macro.area, Aree = pam.out$cluster)
+
+table( Aree = pam.out$cluster, Cluster = oliveoil$macro.area)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Aree, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Variabile `region`
+
+```{r}
+par(mfrow=c(1,2))
+
+barplot(prop.table(table(pam.out$cluster, oliveoil$region),1), beside = T, legend = T, main = "proporzione relativa alle regioni", col = 2:6) 
+barplot(prop.table(table(pam.out$cluster, oliveoil$region),2), beside = T, legend = T, main = "proporzione relativa ai cluster", col = 2:6) 
+
+par(mfrow=c(1,1))
+```
+
+
+spiegazione
+
+
+```{r}
+confusion_matrix <- table(Cluster = oliveoil$region, Regioni = pam.out$cluster)
+table(Regioni = pam.out$cluster, Cluster = oliveoil$region)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Regioni, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Regioni", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
