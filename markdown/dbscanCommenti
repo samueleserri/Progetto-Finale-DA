@@ -1,0 +1,60 @@
+***DESCRIZIONE FUNZOINAMENTO DBSCAN***
+
+Con kNNdistplot() otteniamo il grafico delle deistanze tra un ponto e il suo 17esimo punto più vicino.
+Sceglaimo poi una distanza (raggio) con cui andremo poi a raggruppare i punti in cluster.
+
+dbscan() ci diviede i dati in cluster, in questo caso 3 con 40 punti di "noise".
+
+
+***SCATTER PLOT***
+
+Come nei casi precedenti, gli scatterplot creati con l'acido oleico sono quelli che meglio visualizzano la distribuzione dei cluster.
+	
+
+***BOXPLOT***
+PALMITICO:
+Si vede suzito che i punti di "noise" sono quelli con il range di valori più ampio, caratteristica che terranno per gran parte dei boxplot.
+I tre cluster invece hanno in confronto poca varianza tra i valori interni, con il cluster 3 che ha il range più piccolo di valori. 
+Questo è anche aiutato dal fatto che il cluster 3 è quello meno numeroso.
+Il cluster 2 è in contrasto quello a cui appartengono più tipi di oli ed ha infatti un range di valori più ampio rispetto agli altri due.
+Tra i gruppi, il cluster 2 è quello con percentuali più alte di acido palmitico. 
+
+PALMITOLEICO:
+La distribuzione in cluster di questo acido è sempre vicina alla precedente, essendo i due fortemente correlati.
+Si vede infatti che il cluster 2 è sempre quello con gli oli aventi percentuali di acido maggiore.
+
+STEARICO:
+Anche per la distribuzione in cluster con dbscan l'acido stearico, non essendo presente in grandi quantità e non essendo fortemente correlato a nessun acido tra i più presenti, ha distribuzioni simili in tutti i cluster.
+Si nota che il cluster 3 è quello con la varianza interna minore, sempre probabilmente poichè esse è il meno numeroso. 
+
+OLEICO:
+Come per i metodi K-means e PAM, l'acido oleico è quello che presenta differenze più marcate tra i cluster.
+In questo caso è il primo che contiene oli con percentuali di acido maggiori e il secondo che contiene percentuali minori.
+Il terzo gruppo rimane essere quello con la varianza interna minore.
+
+LINOLEICO:
+Si vede che nel caso dell'acido linoleico il primo cluster contiene oli con la percentuale di acido minore mentre i cluster 2 e 3 hanno percentuali maggiori.
+Questi ultimi hanno inoltre mediane molto vicine anche se il 3 rimane quello con varianza minore. 
+
+LINOLENICO:
+In questo caso vediamo che il range dei punti di "noise" è minore del range di valori del cluster 1 e 2.
+L'acido linolenico è infatti uno degli acidi meno presenti e quindi non andrà ad influire fortemente sulla scelta dei cluster.
+I cluster sono dunque molto simili per quanto riguarda le loro distribuzioni in riferimento a questo acido.
+
+ARACHIDICO:
+Un altro acido presente in percentuali basse all'interno degli oli.
+Si vede che i cluster hanno varianze interne alte, soprattutto il numero 1, e che il cluster3 è quello che tende ad avere al suo interno oli con percentuale di acido arachidico maggiore.
+
+EICOSENOICO:
+In questo caso vediamo che i cluster che contengono i valori prossimi allo zero sono l'1 ed il 3.
+I punti di "noise" rimangono quelli con li range maggiore anche se il cluster 1 contiene anche esso valori per l'acido eicosenoico molto diversi.
+
+
+COMPARAZIONE CON KMEANS
+Paragonando le distribuzioni in boxplot di kmeans e dbscan si notano delle corrispondenze tra le due divisioni in cluster:
+* Notiamo che molti dei vaori estremi sei vari cluster di kmenas vengono assegnati all' insieme dei punti di "noise".
+* Soprattutto il cluster 4 di kmeans sembra contenere valori che dbscan conta come punti di "noise".
+[esempio paragone con palmitico e palmitoleico]
+
+* È presente una grande somiglianza inoltre tra i cluster 2 e 3 di kmeans e i cluster 1 e 2 di dbscan.
+[esempio paragone con 2 acidi a cazzo]
