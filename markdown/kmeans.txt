@@ -1,0 +1,42 @@
+*** ggcorplot ***
+Si osserva che le correlazioni sono tutte positive. Le correlazioni alte prima della trasformazione rimangono alte anche dopo la trasformazione.
+
+
+*** metodo elbow *** 
+Cerchiamo un buon numero di cluster con i dati trasformati usando il metodo elbow. In questo caso osserviamo che un buon numero per k è 4 oppure 5. Prima abbiamo trovato 3 o 4.
+
+*** cluster con k-means *** 
+Si scieglie k = 4 e si usa la funzione kmeans()
+
+*** scatterplot ***
+Facciamo lo scatterplot di alcune variabili per visualizzare il cluster in particolare scegliamo degli acidi con una buona correlazione sulla base di quanto ottenuto dalla matrice di correlazione.
+
+*** barplot ***
+
+***Macro aree***
+
+Gli oli del Sud si trovano al 100% nel cluster 2
+Gli oli della Sardegna al 99% nel cluster 3 e 1% nel cluster 4.
+Gli oli del centro nord al 25% nel cluster 1, 23% nel cluster 3 e 52% nel cluster 4.
+
+Il cluster 1 è composto al 100% da oli del centro nord.
+Il cluster 2 al 100% da oli del sud.
+Il cluster 3 al 73% da oli della Sardegna e al 27% da oli del centro nord.
+Il cluster 4 al 99% da oli del centro nord e all'1% da oli della sardegna.
+
+***Regioni***
+Gli oli della puglia del nord si trovano al 100% nel cluster 2.
+Gli oli della calabria si trovano al 100% nel cluster 2.
+Gli oli della puglia del sud si trovano al 100% nel cluster 2.
+Gli oli della Sicilia si trovano al 100% nel cluster 2.
+Gli oli della Sardegna inland so trovano al 99% nel cluster 3 e 1% nel cluster 4.
+Gli oli della Sardegna coast si trovano al 100% nel cluster 3.
+Gli oli della liguria est si trovano al 64% nel cluster 3, al 30% nel cluster 4 e al 6% nel cluster 1.
+Gli oli della liguria ovest si trovano al 68% nel cluster 1 e al 32% nel 4.
+Gli oli dell'umbria si trovano al 94% nel cluster 4 e al 6% nel cluster 3.
+
+
+Il cluster 1 è formato al 91% da oli della liguria ovest e al 9% da oli della liguria est.
+Il cluster 2 è formato al 17% da oli della calabria, al 64% da oli della puglia sud, 8% da oli della puglia del nord e 11% da oli della Sicilia.
+Il cluster 3 è formato al 48% da oli della Sardegna inland, al 25% da oli della Sardegna coast e al 24% da oli della liguria est, al 1% da oli dell'umbria.
+Il cluster 4 contiene un 1% di oli della Sardegna inland, 19% di oli della liguria est, 20% liguria ovest e 60 % Umbria.
