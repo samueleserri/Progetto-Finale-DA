@@ -147,7 +147,7 @@ plot(oliveoil$oleic, oliveoil$palmitoleic, col = km.out$cluster, pch = 19)
 plot(oliveoil$linoleic, oliveoil$palmitoleic, col = km.out$cluster, pch = 19)
 
 # linoleic oleic
-plot(oliveoil$palmitoleic, oliveoil$linoleic, col = km.out$cluster, pch = 19)
+plot(oliveoil$oleic, oliveoil$linoleic, col = km.out$cluster, pch = 19)
 
 # arachidic linolenic
 plot(oliveoil$linolenic, oliveoil$arachidic, col = km.out$cluster, pch = 19)
@@ -437,7 +437,7 @@ plot(oliveoil$oleic, oliveoil$palmitoleic, col = pam.out$cluster, pch = 19)
 plot(oliveoil$linoleic, oliveoil$palmitoleic, col = pam.out$cluster, pch = 19)
 
 # linoleic oleic
-plot(oliveoil$palmitoleic, oliveoil$linoleic, col = pam.out$cluster, pch = 19)
+plot(oliveoil$oleic, oliveoil$linoleic, col = pam.out$cluster, pch = 19)
 
 # arachidic linolenic
 plot(oliveoil$linolenic, oliveoil$arachidic, col = pam.out$cluster, pch = 19)
@@ -601,25 +601,19 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### DB SCAN
 
-spiegazione
+DBSCAN è un algoritmo di clustering basato sulla densità.
+L'algoritmo prende in input una matrice numerica di dati, un numero ε e un intero Q.
+Dove Q rappresenta il minimo numeo di punti neccessari a formare un cluster e ε rappresenta il raggio di un intorno.
+L'algoritmo opera nel seguente modo:
+1. Per ogni punto calcola gli intorni di raggio ε e identifica i centri che hanno un numero > Q di punti nel proprio interno.
+2. Trova le componenti connesse dei centri dell'intorno.
+3. Associa ogni punto a un cluster se dista < ε dal centro, i punti esclusi sono noise. 
+
+
+Con kNNdistplot() otteniamo il grafico delle deistanze tra un ponto e il suo 17esimo punto più vicino.
+Sceglaimo poi una distanza (raggio) con cui andremo poi a raggruppare i punti in cluster.
 
 
 ```{r}
@@ -627,7 +621,7 @@ kNNdistplot(oliveoil[,3:10], k = 17)
 abline(h=0.013, col = "red")
 ```
 
-Il parametri miglior sono
+Il parametri miglior sono 0.013 come eps, e 18 come minPts
 
 
 ```{r}
@@ -637,6 +631,7 @@ db.out <- dbscan(oliveoil[,3:10], eps = 0.013, minPts = 18)
 str(db.out)
 ```
 
+dbscan() ci diviede i dati in cluster, in questo caso 3 con 40 punti di "noise".
 
 
 Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
@@ -658,7 +653,7 @@ plot(oliveoil$oleic, oliveoil$palmitoleic, col = db.out$cluster+1, pch = 19)
 plot(oliveoil$linoleic, oliveoil$palmitoleic, col = db.out$cluster+1, pch = 19)
 
 # linoleic oleic
-plot(oliveoil$palmitoleic, oliveoil$linoleic, col = db.out$cluster+1, pch = 19)
+plot(oliveoil$oleic, oliveoil$linoleic, col = db.out$cluster+1, pch = 19)
 
 # arachidic linolenic
 plot(oliveoil$linolenic, oliveoil$arachidic, col = db.out$cluster+1, pch = 19)
@@ -673,6 +668,9 @@ par(mfrow=c(1,1))
 ```
 
 
+Come nei casi precedenti, gli scatterplot creati con l'acido oleico sono quelli che meglio visualizzano la distribuzione dei cluster.
+
+
 
 #### Variabile `palmitic`
 
@@ -680,7 +678,12 @@ par(mfrow=c(1,1))
 ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = palmitic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+Si vede suzito che i punti di "noise" sono quelli con il range di valori più ampio, caratteristica che terranno per gran parte dei boxplot.
+I tre cluster invece hanno in confronto poca varianza tra i valori interni, con il cluster 3 che ha il range più piccolo di valori. 
+Questo è anche aiutato dal fatto che il cluster 3 è quello meno numeroso.
+Il cluster 2 è in contrasto quello a cui appartengono più tipi di oli ed ha infatti un range di valori più ampio rispetto agli altri due.
+Tra i gruppi, il cluster 2 è quello con percentuali più alte di acido palmitico. 
+
 
 
 #### Variabile `palmitoleic`
@@ -689,7 +692,8 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = palmitoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+La distribuzione in cluster di questo acido è sempre vicina alla precedente, essendo i due fortemente correlati.
+Si vede infatti che il cluster 2 è sempre quello con gli oli aventi percentuali di acido maggiore.
 
 
 #### Variabile `stearic`
@@ -698,7 +702,9 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = stearic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+Anche per la distribuzione in cluster con dbscan l'acido stearico, non essendo presente in grandi quantità e non essendo fortemente correlato a nessun acido tra i più presenti, ha distribuzioni simili in tutti i cluster.
+Si nota che il cluster 3 è quello con la varianza interna minore, sempre probabilmente poichè esse è il meno numeroso. 
+
 
 
 #### Variabile `oleic`
@@ -707,7 +713,10 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = oleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+Come per i metodi K-means e PAM, l'acido oleico è quello che presenta differenze più marcate tra i cluster.
+In questo caso è il primo che contiene oli con percentuali di acido maggiori e il secondo che contiene percentuali minori.
+Il terzo gruppo rimane essere quello con la varianza interna minore.
+
 
 
 #### Variabile `linoleic`
@@ -716,7 +725,9 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = linoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+Si vede che nel caso dell'acido linoleico il primo cluster contiene oli con la percentuale di acido minore mentre i cluster 2 e 3 hanno percentuali maggiori.
+Questi ultimi hanno inoltre mediane molto vicine anche se il 3 rimane quello con varianza minore. 
+
 
 
 #### Variabile `linolenic`
@@ -725,7 +736,10 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = linolenic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+In questo caso vediamo che il range dei punti di "noise" è minore del range di valori del cluster 1 e 2.
+L'acido linolenico è infatti uno degli acidi meno presenti e quindi non andrà ad influire fortemente sulla scelta dei cluster.
+I cluster sono dunque molto simili per quanto riguarda le loro distribuzioni in riferimento a questo acido.
+
 
 
 #### Variabile `arachidic`
@@ -734,7 +748,9 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = arachidic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+Un altro acido presente in percentuali basse all'interno degli oli.
+Si vede che i cluster hanno varianze interne alte, soprattutto il numero 1, e che il cluster3 è quello che tende ad avere al suo interno oli con percentuale di acido arachidico maggiore.
+
 
 
 #### Variabile `eicosenoic`
@@ -743,7 +759,19 @@ Si nota XX
 ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = eicosenoic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Si nota XX
+In questo caso vediamo che i cluster che contengono i valori prossimi allo zero sono l'1 ed il 3.
+I punti di "noise" rimangono quelli con li range maggiore anche se il cluster 1 contiene anche esso valori per l'acido eicosenoico molto diversi.
+
+
+#### Comparazione con k-means
+Paragonando le distribuzioni in boxplot di kmeans e dbscan si notano delle corrispondenze tra le due divisioni in cluster:
+- Notiamo che molti dei vaori estremi sei vari cluster di kmenas vengono assegnati all' insieme dei punti di "noise".
+- Soprattutto il cluster 4 di kmeans sembra contenere valori che dbscan conta come punti di "noise".
+[esempio paragone con palmitico e palmitoleico]
+
+- È presente una grande somiglianza inoltre tra i cluster 2 e 3 di kmeans e i cluster 1 e 2 di dbscan.
+[esempio paragone con 2 acidi a cazzo]
+
 
 
 
@@ -847,6 +875,154 @@ oliveALR <- cbind(oliveoil[,1:2], oliveALR)
 
 
 ### PAM con ALR
+
+
+Come visto prima, si testa l'algoritmo PAM con le due distanze e con diversi valori di K per scegliere i parametri che creano i cluster migliori.
+
+```{r}
+# DISTANZA MANHATTAN
+larghezza_media_m <- c(1:9)
+for (i in 2:10){
+  pam.out<-pam(oliveALR[,3:9], i, metric="manhattan", stand=TRUE, nstart = 10)
+  larghezza_media_m[i-1] <- pam.out$silinfo$avg.width
+}
+
+# DISTANZA EUCLIDEA
+larghezza_media_e <- c(1:9)
+for (i in 2:10){
+  pam.out<-pam(oliveALR[,3:9], i, metric="euclidean", stand=TRUE, nstart = 10)
+  larghezza_media_e[i-1] <- pam.out$silinfo$avg.width
+}
+
+plot(2:10, larghezza_media_m, col = "red", pch =19)
+points(2:10, larghezza_media_e, col = "blue", pch =19)
+legend("topright", legend = c("manhattan", "euclidean"), col = c("red", "blue"), pch =19)
+```
+
+
+Il numero di cluster migliore sembra essere 6
+La distanza manhattan è nettamente migliore della distanza euclidea a parità di numero di cluster, come si vede dal grafico
+
+
+
+```{r}
+set.seed(17)
+pam.out<-pam(oliveALR[,3:9], 6, metric="manhattan", stand=TRUE, nstart = 10)
+str(pam.out)
+
+# GRAFICO 
+sil_df <- as.data.frame(silhouette(pam.out)[, 1:3])
+colnames(sil_df) <- c("cluster", "neighbor", "sil_width")
+sil_df$obs <- 1:nrow(sil_df)
+sil_df <- sil_df[order(sil_df$cluster, -sil_df$sil_width),]
+sil_df$obs_ordered <- factor(sil_df$obs, levels = sil_df$obs)
+
+ggplot(sil_df, aes(x = obs_ordered, y = sil_width, fill = factor(cluster))) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = rainbow(6)) +
+  labs(title = "Silhouette Plot", x = "Observation", y = "Silhouette Width") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+```
+
+
+
+Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
+
+```{r}
+par(mfrow=c(2,3))
+
+# palmitic palmitoleic
+plot(oliveALR$palmitic, oliveALR$palmitoleic, col = pam.out$cluster, pch = 19)
+
+# linoleic palmitoleic
+plot(oliveALR$linoleic, oliveALR$palmitoleic, col = pam.out$cluster, pch = 19)
+
+# linolenic arachidic
+plot(oliveALR$linolenic, oliveALR$arachidic, col = pam.out$cluster, pch = 19)
+
+# palmitic eicosenoic
+plot(oliveALR$palmitic, oliveALR$eicosenoic, col = pam.out$cluster, pch = 19)
+
+# linolenic eicosenoic
+plot(oliveALR$linolenic, oliveALR$eicosenoic, col = pam.out$cluster, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+In questo caso i grafici in cui si nota meglio la divisione in cluster sono linoleic-palmitoleic e palmitic-palmitoleic 
+
+
+
+#### Variabile `macro.area`
+
+
+```{r}
+prop.table(table(oliveALR$macro.area, pam.out$cluster),1)
+
+barplot(prop.table(table(oliveALR$macro.area, pam.out$cluster),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4, cex.names = 0.70) 
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, pam.out$cluster),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(oliveALR$macro.area, pam.out$cluster),2), beside = T, legend = F, main = "", col = 2:4, cex.names = 0.70)
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, pam.out$cluster),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+
+```
+
+
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix <- table(Cluster = oliveALR$macro.area, Aree = pam.out$cluster)
+
+table( Aree = pam.out$cluster, Cluster = oliveALR$macro.area)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Aree, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Variabile `region`
+
+```{r}
+prop.table(table(pam.out$cluster, oliveALR$region),1)
+
+barplot(prop.table(table(pam.out$cluster, oliveALR$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:6, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveALR$region),1)), fill = 2:5, cex = 0.8, bty = "n")
+
+
+barplot(prop.table(table(pam.out$cluster, oliveALR$region),2), beside = T, legend = F, main = "", col = 2:6, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveALR$region),1)), fill = 2:5, cex = 0.8, bty = "n")
+
+```
+
+
+
+Confusion Matrix: 
+
+```{r}
+confusion_matrix <- table(Cluster = oliveALR$region, Regioni = pam.out$cluster)
+
+table(Regioni = pam.out$cluster, Cluster = oliveALR$region)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Regioni, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Regioni", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
 
 
 ### DB SCAN con ALR
