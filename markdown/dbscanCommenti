@@ -1,4 +1,15 @@
 ***DESCRIZIONE FUNZOINAMENTO DBSCAN***
+DBSCAN è un algoritmo di clustering basato sulla densità.
+L'algoritmo prende in input una matrice numerica di dati, un numero ε e un intero Q.
+Dove Q rappresenta il minimo numeo di punti neccessari a formare un cluster e ε rappresenta il raggio di un intorno.
+L'algoritmo opera nel seguente modo:
+1. Per ogni punto calcola gli intorni di raggio ε e identifica i centri che hanno un numero > Q di punti nel proprio interno.
+2. Trova le componenti connesse dei centri dell'intorno.
+3. Associa ogni punto a un cluster se dista < ε dal centro, i punti esclusi sono noise. 
+
+
+
+***USO DBSCAN***
 
 Con kNNdistplot() otteniamo il grafico delle deistanze tra un ponto e il suo 17esimo punto più vicino.
 Sceglaimo poi una distanza (raggio) con cui andremo poi a raggruppare i punti in cluster.
