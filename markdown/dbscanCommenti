@@ -69,3 +69,27 @@ Paragonando le distribuzioni in boxplot di kmeans e dbscan si notano delle corri
 
 * È presente una grande somiglianza inoltre tra i cluster 2 e 3 di kmeans e i cluster 1 e 2 di dbscan.
 [esempio paragone con 2 acidi a cazzo]
+
+
+***BARPLOT***
+
+MACRO AREE
+Gli oli del sud sono principalmente stati raggruppati nel cluster 3, con più di 75% delle osservazioni totali di oli del sud.
+Gli oli della sardegna sono invece presenti per la maggiorparte nel cluster 3 e nel cluster 2 in quantità minore.
+Gli oli del Centro nord sono infine quasi completamente nel cluster 1.
+Infine si nota che l'insieme dei punti di "noise" è composto principalmente da oli del sud.
+CONFRONTO CON KMENAS
+Si nota che:
+ * gli oli del centro nord in entrambi i casi sono quasi esclusivamente in un singolo cluster
+ * Gli oli della Sardegna hanno anche distribuzioni simili, sono finfatti divisi principalmente tra due cluser per entrambi i metodi
+ * invece gli oli del sud sono distribuiti più uniformemente con kmeans che con dbscan.
+ 
+REGIONI
+Fatta eccezione del cluster 3 che è quasi esclusivamente composto da oli prodotti nella Sardegna inland, nei cluster sono presenti oli da più regioni.
+In particolare:
+ * oli provenienti dalla Puglia nord, Liguria del est, Liguria dell'Ovest e Umbria sono principalmente nel cluster 1.
+ * oli provenienti dalla Calabria, Puglia sud e Sardegna costa sono in granparte nel cluster 2.
+ * gli oli che vengono considerati come punti di "noise" invece sono presenti nella maggiorparte  delle regioni.
+CONFRONTO CON REGIONI
+ * Oli della puglia nord, liguria est, liguria ovest e umbria sono in entrambi i casi principalemente presenti nello stesso cluster.
+ * La sardegna inland non condivide più il cluster principalmente con Calbria, Sardegna e Liguria dell'ovest ma adesso ha un cluster composto quasi esclusivamente dai propri oli.
