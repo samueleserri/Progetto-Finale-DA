@@ -744,20 +744,34 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
 
 
 
+## Trasformazione ALR - Additive Log-Ratio Transofmation
 
 
+A causa della natura compositiva dei dati, ovvero per il fatto che essi sommano a 10000 sulle righe, si decide di applicare una ulteriore trasformazione di tipo Additive Log-Ratio, in modo da rapportare tutte le colonne con una colonna fissata
+
+Questa trasformazione consiste nel dividere ogni colonna del dataset per una colonna scelta arbitrariamente, e di applicare al risultato l'opposto del logatirmo: come nella seguente formula:
 
 
+$$ y_{ij}= -log(\frac{x_{ij}}{x_{ik}}) \;\;\;\;,\; \text{ con } k \text{ colonna fissata} , \forall i \; \text{ riga}$$
+
+La colonna k viene rimossa in quanto il rapporto $$\frac{x_{ij}}{x_{ik}} $$ è sempre 1 e di conseguenza si ottengono valori nulli una volta applicato il logaritmo
+
+Quindi si è deciso di applicare la trasformazione alr al dataset oliveoil in modo da evidenziare eventuali differenze. 
+Si sceglie la colonna 6 in modo da cercare di evidenziare cluster nei dati meno correlati. In quanto l'acido oleico è il più presente ed il più correlato con le altre variabili
 
 
 
 ```{r}
-
+oliveALR <- -log(oliveoil[,-c(1,2,6)]/oliveoil[,6])
+oliveALR <- cbind(oliveoil[,1:2], oliveALR)
 ```
 
 
 
+### K-means con ALR
 
 
+### PAM con ALR
 
 
+### DB SCAN con ALR
