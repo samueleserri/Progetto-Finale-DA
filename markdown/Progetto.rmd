@@ -363,6 +363,7 @@ La distanza manhattan è nettamente migliore della distanza euclidea a parità d
 
 
 ```{r}
+set.seed(17)
 pam.out<-pam(oliveoil[,3:10], 5, metric="manhattan", stand=TRUE, nstart = 10)
 str(pam.out)
 pam.out
@@ -495,7 +496,7 @@ par(mfrow=c(1,2))
 ```
 
 
-Confuzion Matrix:
+Confusion Matrix:
 
 ```{r}
 confusion_matrix <- table(Cluster = oliveoil$macro.area, Aree = pam.out$cluster)
@@ -544,6 +545,199 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
 
 
 
+
+
+
+
+### DB SCAN
+
+spiegazione
+
+
+```{r}
+kNNdistplot(oliveoil[,3:10], k = 17)
+abline(h=0.013, col = "red")
+```
+
+Il parametri miglior sono
+
+
+```{r}
+set.seed(17)
+
+db.out <- dbscan(oliveoil[,3:10], eps = 0.013, minPts = 18)
+str(db.out)
+db.out
+
+```
+
+
+
+Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
+
+```{r}
+
+par(mfrow=c(2,2))
+
+# palmitic palmitoleic
+plot(oliveoil$palmitic, oliveoil$palmitoleic, col = db.out$cluster+1, pch = 19)
+
+# oleic palmitic
+plot(oliveoil$oleic, oliveoil$palmitic, col = db.out$cluster+1, pch = 19)
+
+# oleic palmitoleic
+plot(oliveoil$oleic, oliveoil$palmitoleic, col = db.out$cluster+1, pch = 19)
+
+# linoleic palmitoleic
+plot(oliveoil$linoleic, oliveoil$palmitoleic, col = db.out$cluster+1, pch = 19)
+
+# linoleic oleic
+plot(oliveoil$palmitoleic, oliveoil$linoleic, col = db.out$cluster+1, pch = 19)
+
+# arachidic linolenic
+plot(oliveoil$linolenic, oliveoil$arachidic, col = db.out$cluster+1, pch = 19)
+
+# eicosenoic palmitic
+plot(oliveoil$palmitic, oliveoil$eicosenoic, col = db.out$cluster+1, pch = 19)
+
+# eicosenoic linolenic
+plot(oliveoil$linolenic, oliveoil$eicosenoic, col = db.out$cluster+1, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+
+
+#### Variabile `palmitic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = palmitic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+#### Variabile `palmitoleic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = palmitoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+#### Variabile `stearic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = stearic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+#### Variabile `oleic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = oleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+#### Variabile `linoleic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = linoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+#### Variabile `linolenic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = linolenic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+#### Variabile `arachidic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = arachidic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+#### Variabile `eicosenoic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = eicosenoic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota XX
+
+
+
+
+#### Variabile `macro.area`
+
+
+```{r}
+prop.table(table(db.out$cluster, oliveoil$macro.area),1)
+
+barplot(prop.table(table(db.out$cluster, oliveoil$macro.area),1), beside = T, legend = T, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.50) 
+barplot(prop.table(table(db.out$cluster, oliveoil$macro.area),2), beside = T, legend = T, main = "", col = 2:5, cex.names = 0.50)
+```
+
+
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix <- table(Cluster = oliveoil$macro.area, Aree = db.out$cluster)
+
+table( Aree = db.out$cluster, Cluster = oliveoil$macro.area)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Aree, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Variabile `region`
+
+```{r}
+prop.table(table(db.out$cluster, oliveoil$region),1)
+
+barplot(prop.table(table(db.out$cluster, oliveoil$region),1), beside = T, legend = T, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.50) 
+barplot(prop.table(table(db.out$cluster, oliveoil$region),2), beside = T, legend = T, main = "", col = 2:5, cex.names = 0.50)
+```
+
+
+spiegazione
+
+
+```{r}
+confusion_matrix <- table(Cluster = oliveoil$region, Regioni = db.out$cluster)
+
+table(Regioni = db.out$cluster, Cluster = oliveoil$region)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Regioni, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Regioni", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
 
 
 
