@@ -19,6 +19,7 @@ library(ggplot2)
 library(ggcorrplot)
 library(pdfCluster)
 library(dbscan)
+library(moments)
 library(compositions)
 library(reshape2)
 ```
@@ -66,7 +67,183 @@ for (i in 1:nrow(oliveoil)){
 
 ## Anilisi univariata e bivariata del dataset
 
-PUCCIO
+
+### Variabile Macro Area
+```{r}
+display_table(oliveoil$macro.area, "Macro Area")
+```
+
+### Variabile Regioni
+```{r}
+display_table(oliveoil$region, "Regioni")
+```
+
+
+
+### Variabile acido palmitic
+
+È un acido grasso saturo con 16 atomi di carbonio. È uno degli acidi grassi più comuni presenti negli oli vegetali e negli animali. È solido a temperatura ambiente e contribuisce alla consistenza degli oli.
+
+```{r}
+par(mfrow = c(1,3))
+
+display_summary_and_var(oliveoil$palmitic)
+hist(oliveoil$palmitic, probability = T,col = 5, main = "palmitic")
+boxplot(oliveoil$palmitic~oliveoil$macro.area)
+boxplot(oliveoil$palmitic~oliveoil$region)
+
+par(mfrow = c(1,1))
+```
+
+Istogramma: La distribuzione è leggermente asimmetrica a destra con la maggior parte dei valori compresi tra 0.10 e 0.16.
+Boxplot (Area Macro): La regione Sud ha un valore mediano più alto rispetto a Sardegna e Centro-Nord.
+Boxplot (Regione): I valori mediani più alti si trovano in Puglia Nord e Sicilia, con una significativa variabilità e outlier, indicando una gamma diversificata di composizioni.
+
+
+
+
+### Variabile acido palmitoleic
+
+È un acido grasso monoinsaturo con 16 atomi di carbonio e un doppio legame nella posizione 9. Si trova principalmente negli oli di pesce e in alcune piante. Ha proprietà emollienti e antiossidanti.
+
+```{r}
+par(mfrow = c(1,3))
+
+display_summary_and_var(oliveoil$palmitoleic)
+hist(oliveoil$palmitoleic,col = 5, main = "palmitoleic")
+boxplot(oliveoil$palmitoleic~oliveoil$macro.area)
+boxplot(oliveoil$palmitoleic~oliveoil$region)
+
+par(mfrow = c(1,1))
+```
+
+Istogramma: La distribuzione è leggermente asimmetrica a destra con un picco intorno a 0.015.
+Boxplot (Area Macro): La regione Sud ha i valori mediani più alti, mentre Sardegna e Centro-Nord hanno valori più bassi.
+Boxplot (Regione): Puglia Nord e Sicilia mostrano valori mediani più alti, con una significativa variabilità e outlier, indicando una gamma diversificata di composizioni.
+
+
+
+### Variabile acido stearic
+
+È un acido grasso saturo con 18 atomi di carbonio. Comunemente presente nel burro di cacao e nel sego, viene utilizzato in cosmetica e nella produzione di candele per la sua consistenza solida a temperatura ambiente.
+
+```{r}
+par(mfrow = c(1,3))
+
+display_summary_and_var(oliveoil$stearic)
+hist(oliveoil$stearic, col = 5, main = "stearic")
+boxplot(oliveoil$stearic~oliveoil$macro.area)
+boxplot(oliveoil$stearic~oliveoil$region)
+
+par(mfrow = c(1,1))
+```
+
+Istogramma: La distribuzione è leggermente asimmetrica a destra, con la maggior parte dei valori compresi tra 0.02 e 0.03.
+Boxplot (Area Macro): La regione Sud ha un valore mediano più alto, mentre Sardegna e Centro-Nord hanno valori più bassi.
+Boxplot (Regione): I valori mediani più alti si trovano in Puglia Nord e Sicilia. La variabilità è alta, con molti outlier in queste regioni.
+
+
+
+
+### Variabile acido oleic
+
+È un acido grasso monoinsaturo con 18 atomi di carbonio e un doppio legame nella posizione 9. È il principale componente dell'olio d'oliva e di molti altri oli vegetali, noto per le sue proprietà benefiche per la salute cardiovascolare.
+
+```{r}
+par(mfrow = c(1,3))
+
+display_summary_and_var(oliveoil$oleic)
+hist(oliveoil$oleic, col = 5, main = "oleic")
+boxplot(oliveoil$oleic~oliveoil$macro.area)
+boxplot(oliveoil$oleic~oliveoil$region)
+```
+
+Istogramma: La distribuzione è approssimativamente normale, centrata intorno a 0.75.
+Boxplot (Area Macro): La Sardegna mostra un valore mediano più alto rispetto al Sud e al Centro-Nord.
+Boxplot (Regione): Puglia Nord, Sicilia e Liguria Est hanno valori mediani più alti, con la Sicilia che mostra la gamma più ampia e molti outlier, indicando una significativa variabilità nel contenuto di acido oleico in questa regione.
+
+
+
+
+### Variabile acido linoleic
+
+È un acido grasso polinsaturo con 18 atomi di carbonio e due doppi legami nelle posizioni 9 e 12. È essenziale per il corpo umano, che non può sintetizzarlo, e si trova in oli come quello di girasole e di mais. È importante per la salute della pelle e la funzione cellulare.
+
+```{r}
+par(mfrow = c(1,3))
+
+display_summary_and_var(oliveoil$linoleic)
+hist(oliveoil$linoleic, col = 5, main = "linoleic")
+boxplot(oliveoil$linoleic~oliveoil$macro.area)
+boxplot(oliveoil$linoleic~oliveoil$region)
+```
+
+Istogramma: La distribuzione è leggermente asimmetrica a destra, con un intervallo di valori compreso tra 0.04 e 0.14.
+Boxplot (Area Macro): La regione Sud ha il valore mediano più alto, mentre Sardegna e Centro-Nord hanno valori mediani significativamente più bassi.
+Boxplot (Regione): Puglia Nord, Sicilia e Liguria Est mostrano valori mediani più alti. La variabilità all'interno di queste regioni è alta, indicando composizioni dell'olio molto diverse.
+
+
+
+### Variabile acido linolenic
+
+È un acido grasso polinsaturo con 18 atomi di carbonio e tre doppi legami nelle posizioni 9, 12 e 15. È essenziale e si trova negli oli di semi di lino e di soia. Ha un ruolo cruciale nella funzione cerebrale e nella crescita normale.
+
+```{r}
+par(mfrow = c(1,3))
+
+display_summary_and_var(oliveoil$linolenic)
+hist(oliveoil$linolenic, col = 5, main = "linolenic")
+boxplot(oliveoil$linolenic~oliveoil$macro.area)
+boxplot(oliveoil$linolenic~oliveoil$region)
+```
+
+Istogramma: La distribuzione è approssimativamente normale ma leggermente asimmetrica a destra. La maggior parte dei valori rientra tra 0.002 e 0.006.
+Boxplot (Area Macro): La regione Sud mostra di nuovo valori mediani più alti. Centro-Nord e Sardegna mostrano valori più bassi, con la Sardegna che ha la mediana più bassa.
+Boxplot (Regione): I valori mediani più alti si trovano in regioni come la Puglia Nord e la Sicilia. La variabilità in queste regioni è alta, con diversi outlier nella Liguria Est.
+
+
+
+
+
+### Variabile acido arachidic
+
+È un acido grasso saturo con 20 atomi di carbonio. Si trova in piccole quantità nell'olio di arachidi e nel burro di cacao. È solido a temperatura ambiente e viene utilizzato in alcuni processi industriali.
+
+```{r}
+par(mfrow = c(1,3))
+
+display_summary_and_var(oliveoil$arachidic)
+hist(oliveoil$arachidic, col = 5, main = "arachidic")
+boxplot(oliveoil$arachidic~oliveoil$macro.area)
+boxplot(oliveoil$arachidic~oliveoil$region)
+```
+
+Istogramma: La distribuzione è leggermente asimmetrica a destra con un picco intorno a 0.006. Questo suggerisce che la maggior parte dei campioni di olio d'oliva ha livelli moderati di acido arachidico.
+Boxplot (Area Macro): La regione Sud mostra un valore mediano più alto, mentre Sardegna e Centro-Nord hanno valori mediani più bassi e simili.
+Boxplot (Regione): Regioni come la Puglia Nord e la Sicilia hanno valori mediani più alti rispetto ad altre come la Liguria Est. Ci sono outlier nel Sud e nella Puglia Nord.
+
+
+
+### Variabile acido eicosenoic
+
+È un acido grasso monoinsaturo con 20 atomi di carbonio e un doppio legame nella posizione 11. È presente in piccole quantità negli oli vegetali e ha proprietà simili ad altri acidi grassi monoinsaturi, contribuendo alla fluidità delle membrane cellulari.
+
+```{r}
+par(mfrow = c(1,3))
+
+display_summary_and_var(oliveoil$eicosenoic)
+hist(oliveoil$eicosenoic, col = 5, main = "eicosenoic")
+boxplot(oliveoil$eicosenoic~oliveoil$macro.area)
+boxplot(oliveoil$eicosenoic~oliveoil$region)
+```
+
+Istogramma: La distribuzione dell'acido eicosenoico è fortemente asimmetrica a destra, con la maggior parte dei campioni che presentano una concentrazione molto bassa (vicina a 0.000). Questo indica che alte concentrazioni di acido eicosenoico sono rare.
+Boxplot (Area Macro): Il boxplot mostra che la regione Sud ha una concentrazione mediana più alta rispetto alla Sardegna e al Centro-Nord, con queste ultime due che hanno valori molto bassi e simili.
+Boxplot (Regione): Le regioni come la Puglia Nord e la Sicilia mostrano valori mediani più alti, mentre regioni come la Liguria Est hanno concentrazioni costantemente basse. Ci sono diversi outlier nel Sud e in Sicilia.
+
+
+
+PUCCIO BIVARIATA
 
 
 ## Correlazione tra gli acidi
