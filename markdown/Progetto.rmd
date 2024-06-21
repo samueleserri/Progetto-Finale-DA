@@ -19,6 +19,7 @@ library(ggplot2)
 library(ggcorrplot)
 library(pdfCluster)
 library(dbscan)
+library(maps)
 library(moments)
 library(compositions)
 library(reshape2)
@@ -487,6 +488,11 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+#### Adjusted Rand Index - K Means
+
+```{r}
+ari_km <- adj.rand.index(oliveoil$macro.area, km.out$cluster)
+```
 
 
 
@@ -776,6 +782,13 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+#### Adjusted Rand Index - Pam
+
+```{r}
+ari_pam <- adj.rand.index(oliveoil$macro.area, pam.out$cluster)
+```
+
+
 
 
 
@@ -1054,6 +1067,14 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
 ```
 
 
+#### Adjusted Rand Index - DBSCAN
+
+```{r}
+ari_db <- adj.rand.index(oliveoil$macro.area, db.out$cluster)
+```
+
+
+
 
 
 ## Trasformazione ALR - Additive Log-Ratio Transofmation
@@ -1233,6 +1254,11 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+#### Adjusted Rand Index - K Means
+
+```{r}
+ari_km_ln <- adj.rand.index(oliveoil$macro.area, km.out$cluster)
+```
 
 
 
@@ -1404,6 +1430,15 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
 ```
 
 
+#### Adjusted Rand Index - PAM
+
+```{r}
+ari_pam_ln <- adj.rand.index(oliveoil$macro.area, pam.out$cluster)
+```
+
+
+
+
 
 ### DB SCAN con ALR
 
@@ -1547,4 +1582,11 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+
+
+#### Adjusted Rand Index - DB SCAN
+
+```{r}
+ari_db_ln <- adj.rand.index(oliveoil$macro.area, db.out$cluster)
+```
 
