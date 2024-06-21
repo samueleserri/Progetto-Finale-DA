@@ -251,9 +251,11 @@ oliveoil <- oliveoil[, -6]
 xx
 
 
-## Dataset con le coordinate
+#### Dataset con le coordinate
 
-Creazione del dataset contenete le coordinate GPS degli oli
+Creazione del dataset contenete le coordinate GPS degli oli usato in seguito per i plot delle mappe
+
+Si è deciso di sommare un offset alle coordinate dei punti di ogni regione, in modo da evitare che ogni singola osservazione venisse sovrapposta e per meglio mostrare visivamente la divisione in cluster di ogni regione.
 
 ```{r}
 
@@ -322,7 +324,7 @@ for (i in 1:9){
   km.out <- kmeans(oliveoil[,3:9], centers = i, nstart = 15)
   withins[i] <- km.out$tot.withinss
 }
-plot(1:9, withins)
+plot(1:9, withins, pch=19, col = "blue")
 
 # dal grafico si nota che il numero migliore di cluster è 3 o 4
 
@@ -1001,7 +1003,7 @@ oliveALR <- -log(oliveoil[,-c(1,2,6)]/oliveoil[,6])
 oliveALR <- cbind(oliveoil[,1:2], oliveALR)
 ```
 
-Si vuole analizzare ora il nuvo dataset oliveALR
+Si vuole analizzare ora il dataset trasformato oliveALR
 
 ```{r}
 ggcorrplot(cor(oliveALR[,3:9]), type = "lower", lab = TRUE)
@@ -1028,7 +1030,7 @@ for (i in 1:9){
   withins[i] <- km.out$tot.withinss
 }
 par(mfrow=c(1,1))
-plot(1:9, withins)
+plot(1:9, withins, pch = 19, col ="blue")
 ```
 
 Si scieglie k = 4 e si usa la funzione kmeans()
