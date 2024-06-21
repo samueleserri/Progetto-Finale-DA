@@ -34,6 +34,10 @@ Si nota che i tre cluster contengono tutti prevalentemente un area geografica di
  * il cluster 3 è formato da oli provenienti solamente dal Centro Nord
 Gli oli del centro nord sono comunque distribuiti tra il cluster 2, 3 e sono anche presenti in gran parte nell'insieme sei punti di "noise"
 
+PARAGONE CON METODO SENZA LOGARITMO
+
+Con la trasformazione logaritmica notiamo che gli oli del Sud e della Sardegna hanno una distribuzione migliore tra i cluster, infatti questi solo quasi esclusivamente appartenenti ad un singolo cluster ciascuno.
+Per gli oli del Nord/Centro è invece accaduto il contrario, nella distribuzione in cluster senza trasformazione questi sono concentrati in un singolo cluster mentre con la trasformazione si dividono in 2 cluster con una gran parte di essi che sono considerati punti di "noise"
 
 REGIONI
 Notiamo che in questo caso, rimossi i valori di "noise", la distribuzione dei cluster tra le regioni è incredibilmente precisa:
@@ -42,3 +46,8 @@ Notiamo che in questo caso, rimossi i valori di "noise", la distribuzione dei cl
  * Infine, gli oli umbri sono tutti nel cluster 3
 Notiamo però che gli oli provenienti dalla Liguria dell'ovest sono tutti considerati punti di "noise"
 
+PARAGONE CON METODO SENZA LOGARITMO
+
+Si vede che il metodo con trasformazione logaritmica riesce a raggruppare con più precisone oli provenienti dalla stessa regione all'interno di un singolo cluster. 
+I gruppi di regioni che andavano a raggrupparsi in un singolo cluster sono cambiati. Per esempio la Puglia del nord non è più nello stesso cluster con Liguria e Puglia ma adesso è situato le cluster con Calabria, Puglia del sud e Sicilia.
+Infine, la distribuzione tra cluster degli oli provenienti dalla Liguria dell'ovest peggiora con la trasformazione. Tutti gli oli provenienti da quella regione sono infatti considerati punt
