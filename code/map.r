@@ -13,8 +13,8 @@ region_coords <- list(
   "Calabria" = c(lat = 39.0, long = 16.5),
   "Apulia.south" = c(lat = 40.0, long = 18.0),
   "Sicily" = c(lat = 37.6, long = 14.1),
-  "Sardinia.inland" = c(lat = 40.0, long = 9.0),
-  "Sardinia.coast" = c(lat = 40.0, long = 9.5),
+  "Sardinia.inland" = c(lat = 40.1, long = 9.0),
+  "Sardinia.coast" = c(lat = 39.1, long = 9.7),
   "Liguria.east" = c(lat = 44.3, long = 9.5),
   "Liguria.west" = c(lat = 44.0, long = 8.0),
   "Umbria" = c(lat = 42.9, long = 12.6)
