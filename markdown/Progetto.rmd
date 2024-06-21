@@ -85,14 +85,10 @@ display_table(oliveoil$region, "Regioni")
 È un acido grasso saturo con 16 atomi di carbonio. È uno degli acidi grassi più comuni presenti negli oli vegetali e negli animali. È solido a temperatura ambiente e contribuisce alla consistenza degli oli.
 
 ```{r}
-par(mfrow = c(1,3))
-
 display_summary_and_var(oliveoil$palmitic)
 hist(oliveoil$palmitic, probability = T,col = 5, main = "palmitic")
 boxplot(oliveoil$palmitic~oliveoil$macro.area)
 boxplot(oliveoil$palmitic~oliveoil$region)
-
-par(mfrow = c(1,1))
 ```
 
 Istogramma: La distribuzione è leggermente asimmetrica a destra con la maggior parte dei valori compresi tra 0.10 e 0.16.
@@ -107,14 +103,10 @@ Boxplot (Regione): I valori mediani più alti si trovano in Puglia Nord e Sicili
 È un acido grasso monoinsaturo con 16 atomi di carbonio e un doppio legame nella posizione 9. Si trova principalmente negli oli di pesce e in alcune piante. Ha proprietà emollienti e antiossidanti.
 
 ```{r}
-par(mfrow = c(1,3))
-
 display_summary_and_var(oliveoil$palmitoleic)
 hist(oliveoil$palmitoleic,col = 5, main = "palmitoleic")
 boxplot(oliveoil$palmitoleic~oliveoil$macro.area)
 boxplot(oliveoil$palmitoleic~oliveoil$region)
-
-par(mfrow = c(1,1))
 ```
 
 Istogramma: La distribuzione è leggermente asimmetrica a destra con un picco intorno a 0.015.
@@ -128,14 +120,10 @@ Boxplot (Regione): Puglia Nord e Sicilia mostrano valori mediani più alti, con 
 È un acido grasso saturo con 18 atomi di carbonio. Comunemente presente nel burro di cacao e nel sego, viene utilizzato in cosmetica e nella produzione di candele per la sua consistenza solida a temperatura ambiente.
 
 ```{r}
-par(mfrow = c(1,3))
-
 display_summary_and_var(oliveoil$stearic)
 hist(oliveoil$stearic, col = 5, main = "stearic")
 boxplot(oliveoil$stearic~oliveoil$macro.area)
 boxplot(oliveoil$stearic~oliveoil$region)
-
-par(mfrow = c(1,1))
 ```
 
 Istogramma: La distribuzione è leggermente asimmetrica a destra, con la maggior parte dei valori compresi tra 0.02 e 0.03.
@@ -150,8 +138,6 @@ Boxplot (Regione): I valori mediani più alti si trovano in Puglia Nord e Sicili
 È un acido grasso monoinsaturo con 18 atomi di carbonio e un doppio legame nella posizione 9. È il principale componente dell'olio d'oliva e di molti altri oli vegetali, noto per le sue proprietà benefiche per la salute cardiovascolare.
 
 ```{r}
-par(mfrow = c(1,3))
-
 display_summary_and_var(oliveoil$oleic)
 hist(oliveoil$oleic, col = 5, main = "oleic")
 boxplot(oliveoil$oleic~oliveoil$macro.area)
@@ -170,8 +156,6 @@ Boxplot (Regione): Puglia Nord, Sicilia e Liguria Est hanno valori mediani più 
 È un acido grasso polinsaturo con 18 atomi di carbonio e due doppi legami nelle posizioni 9 e 12. È essenziale per il corpo umano, che non può sintetizzarlo, e si trova in oli come quello di girasole e di mais. È importante per la salute della pelle e la funzione cellulare.
 
 ```{r}
-par(mfrow = c(1,3))
-
 display_summary_and_var(oliveoil$linoleic)
 hist(oliveoil$linoleic, col = 5, main = "linoleic")
 boxplot(oliveoil$linoleic~oliveoil$macro.area)
@@ -189,8 +173,6 @@ Boxplot (Regione): Puglia Nord, Sicilia e Liguria Est mostrano valori mediani pi
 È un acido grasso polinsaturo con 18 atomi di carbonio e tre doppi legami nelle posizioni 9, 12 e 15. È essenziale e si trova negli oli di semi di lino e di soia. Ha un ruolo cruciale nella funzione cerebrale e nella crescita normale.
 
 ```{r}
-par(mfrow = c(1,3))
-
 display_summary_and_var(oliveoil$linolenic)
 hist(oliveoil$linolenic, col = 5, main = "linolenic")
 boxplot(oliveoil$linolenic~oliveoil$macro.area)
@@ -210,8 +192,6 @@ Boxplot (Regione): I valori mediani più alti si trovano in regioni come la Pugl
 È un acido grasso saturo con 20 atomi di carbonio. Si trova in piccole quantità nell'olio di arachidi e nel burro di cacao. È solido a temperatura ambiente e viene utilizzato in alcuni processi industriali.
 
 ```{r}
-par(mfrow = c(1,3))
-
 display_summary_and_var(oliveoil$arachidic)
 hist(oliveoil$arachidic, col = 5, main = "arachidic")
 boxplot(oliveoil$arachidic~oliveoil$macro.area)
@@ -229,8 +209,6 @@ Boxplot (Regione): Regioni come la Puglia Nord e la Sicilia hanno valori mediani
 È un acido grasso monoinsaturo con 20 atomi di carbonio e un doppio legame nella posizione 11. È presente in piccole quantità negli oli vegetali e ha proprietà simili ad altri acidi grassi monoinsaturi, contribuendo alla fluidità delle membrane cellulari.
 
 ```{r}
-par(mfrow = c(1,3))
-
 display_summary_and_var(oliveoil$eicosenoic)
 hist(oliveoil$eicosenoic, col = 5, main = "eicosenoic")
 boxplot(oliveoil$eicosenoic~oliveoil$macro.area)
@@ -242,8 +220,6 @@ Boxplot (Area Macro): Il boxplot mostra che la regione Sud ha una concentrazione
 Boxplot (Regione): Le regioni come la Puglia Nord e la Sicilia mostrano valori mediani più alti, mentre regioni come la Liguria Est hanno concentrazioni costantemente basse. Ci sono diversi outlier nel Sud e in Sicilia.
 
 
-
-PUCCIO BIVARIATA
 
 
 ## Correlazione tra gli acidi
@@ -831,6 +807,7 @@ set.seed(17)
 
 db.out <- dbscan(oliveoil[,3:10], eps = 0.013, minPts = 18)
 str(db.out)
+db.out
 ```
 
 dbscan() ci diviede i dati in cluster, in questo caso 3 con 40 punti di "noise".
@@ -1111,7 +1088,6 @@ Dal grafico si vede che le correlazioni ora sono  sempre positive, inoltre le va
 
 Altre informazioni degne di nota riguardano:
 
-PUCCIO
 
 
 
@@ -1430,4 +1406,145 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
 
 
 ### DB SCAN con ALR
+
+
+Come visto prima, si testa l'algoritmo DBSCAN attraverso la funzione kNNdistplot() e si analizza il grafico ottenuto.
+
+
+```{r}
+kNNdistplot(oliveALR[,3:9], k = 17)
+abline(h=0.5, col = "red")
+```
+
+I parametri migliori trovati sono raggio 0.5 e punti minimi 18
+
+
+```{r}
+set.seed(17)
+
+db.out <- dbscan(oliveALR[,3:9], eps = 0.5, minPts = 18)
+str(db.out)
+db.out
+```
+
+dbscan() ci diviede i dati in cluster, in questo caso 3 con 87 punti di "noise".
+
+
+Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
+
+```{r}
+
+par(mfrow=c(2,3))
+
+# palmitic palmitoleic
+plot(oliveALR$palmitic, oliveALR$palmitoleic, col = db.out$cluster+1, pch = 19)
+
+# linoleic palmitoleic
+plot(oliveALR$linoleic, oliveALR$palmitoleic, col = db.out$cluster+1, pch = 19)
+
+# arachidic linolenic
+plot(oliveALR$linolenic, oliveALR$arachidic, col = db.out$cluster+1, pch = 19)
+
+# eicosenoic palmitic
+plot(oliveALR$palmitic, oliveALR$eicosenoic, col = db.out$cluster+1, pch = 19)
+
+# eicosenoic linolenic
+plot(oliveALR$linolenic, oliveALR$eicosenoic, col = db.out$cluster+1, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+
+
+
+#### Variabile `macro.area`
+
+
+```{r}
+prop.table(table(db.out$cluster, oliveALR$macro.area),1)
+
+barplot(prop.table(table(oliveALR$macro.area, db.out$cluster),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4, cex.names = 0.70) 
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, db.out$cluster),1)), fill = 2:4, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(oliveALR$macro.area, db.out$cluster),2), beside = T, legend = F, main = "", col = 2:4, cex.names = 0.70)
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, db.out$cluster),1)), fill = 2:4, cex = 0.8, bty = "n")
+
+```
+
+Si nota che i tre cluster contengono tutti prevalentemente un area geografica diversa:
+- il cluster 1 contiene solo oli del Sud
+- il cluster 2 è principalmente composto da oli della Sardegna
+- il cluster 3 è formato da oli provenienti solamente dal Centro Nord
+Gli oli del centro nord sono comunque distribuiti tra il cluster 2, 3 e sono anche presenti in gran parte nell'insieme sei punti di "noise"
+
+
+Paragone con dati non trasformati:
+
+Con la trasformazione logaritmica notiamo che gli oli del Sud e della Sardegna hanno una distribuzione migliore tra i cluster, infatti questi solo quasi esclusivamente appartenenti ad un singolo cluster ciascuno.
+Per gli oli del Nord/Centro è invece accaduto il contrario, nella distribuzione in cluster senza trasformazione questi sono concentrati in un singolo cluster mentre con la trasformazione si dividono in 2 cluster con una gran parte di essi che sono considerati punti di "noise"
+
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix <- table(Cluster = oliveALR$macro.area, Aree = db.out$cluster)
+
+table( Aree = db.out$cluster, Cluster = oliveALR$macro.area)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Aree, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Variabile `region`
+
+```{r}
+prop.table(table(db.out$cluster, oliveALR$region),1)
+counts <- prop.table(table(db.out$cluster, oliveALR$region), 1)
+
+barplot(prop.table(table(db.out$cluster, oliveALR$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(counts), fill = 2:5, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(db.out$cluster, oliveALR$region),2), beside = T, legend = F, main = "", col = 2:5, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(counts), fill = 2:5, cex = 0.8, bty = "n")
+
+```
+
+
+Notiamo che in questo caso, rimossi i valori di "noise", la distribuzione dei cluster tra le regioni è incredibilmente precisa:
+ * Oli dalla Puglia, Calabria e Sicilia sono esclusivamente presenti nel cluster 1
+ * Oli da Sardegna e Liguria dell'est sono quasi totalmente nel cluster 2
+ * Infine, gli oli umbri sono tutti nel cluster 3
+Notiamo però che gli oli provenienti dalla Liguria dell'ovest sono tutti considerati punti di "noise"
+
+
+Paragone con dati non trasformati:
+
+Si vede che il metodo con trasformazione logaritmica riesce a raggruppare con più precisone oli provenienti dalla stessa regione all'interno di un singolo cluster. 
+I gruppi di regioni che andavano a raggrupparsi in un singolo cluster sono cambiati. Per esempio la Puglia del nord non è più nello stesso cluster con Liguria e Puglia ma adesso è situato le cluster con Calabria, Puglia del sud e Sicilia.
+Infine, la distribuzione tra cluster degli oli provenienti dalla Liguria dell'ovest peggiora con la trasformazione. Tutti gli oli provenienti da quella regione sono infatti considerati punti di "noise" nel secondo caso.
+
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix <- table(Cluster = oliveALR$region, Regioni = db.out$cluster)
+
+table(Regioni = db.out$cluster, Cluster = oliveALR$region)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Regioni, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Regioni", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
 
