@@ -1073,39 +1073,39 @@ Si nota una buona divisione in cluster rispetto alle variabili palmitic e palmit
 #### Variabile `palmitic` nei cluster
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = palmitic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = palmitic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-La variabile palmitic presenta valori maggiori tra glioli del secondo cluster, mentre negli altri gruppi la mediana dei valori è circa allineata
+La variabile palmitic presenta valori minori tra gli oli del secondo cluster, mentre negli altri gruppi la mediana dei valori è circa allineata
 
 
 #### Variabile `palmitoleic` nei cluster
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = palmitoleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = palmitoleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Analogamente alla variabile palmitic, si nota un cluster 2 con una devianza within più elevata rispetto agli altri gruppi, che hanno anch'essi una mediana più bassa
-il cluster 3 e 4 sono abbastanza simili tra loro, ma il cluster 4 ha dei valori outlier più distanti dalle code della distribuzione.
+Analogamente alla variabile palmitic, si nota un cluster 2 con una devianza within più elevata rispetto agli altri gruppi, che hanno anch'essi una mediana più alta.
+Il cluster 1 e 3 sono abbastanza simili tra loro,
+Il cluster 4 ha dei valori outlier più distanti dalle code della distribuzione.
 
 
 
 #### Variabile `stearic` nei cluster
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = stearic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = stearic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-I cluster hanno delle mediane abbastanza simili tra loro, il che indica una bassa devianza between.
-Il cluster 1 ha una devianza within più elevata.
-Nel cluster 2 sono presenti una significativa quantità di valori outlier.
-
+I cluster 1, 2 e 3 hanno delle mediane abbastanza simili tra loro, il che indica una bassa devianza between.
+Il cluster 1 ha una devianza within più elevata ripetto agli altri.
+Il cluster 4 ha dei valori di concentrazione più elevati
 
 
 #### Variabile `linoleic` nei cluster
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = linoleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = linoleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 Si nota che i cluster 2 e 3 hanno delle distribuzioni di acido linoleico simili, con una mediana più elevata rispetto agli altri cluster.
@@ -1116,7 +1116,7 @@ Il quarto cluster presenta la concentrazione più bassa di acido linoleico e anc
 #### Variabile `linolenic` nei cluster
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = linolenic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = linolenic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 Si nota una maggiore disparità tra i cluster rispetto agli altri acidi,
@@ -1126,7 +1126,7 @@ Il cluster 1 contiene tutti gli oli che hanno una quantità di acido linoleico u
 #### Variabile `arachidic` nei cluster
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = arachidic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = arachidic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 La concentrazione di acido arachidico è distribuito tra i cluster in modo simile all'acido linolenico, si nota anche in questo caso che i valori più bassi di concentrazione sono contenuti nel cluster 1, e che il cluster 4 contiene una scala di valori di concentrazione più ampia
@@ -1135,7 +1135,7 @@ La concentrazione di acido arachidico è distribuito tra i cluster in modo simil
 #### Variabile `eicosenoic` nei cluster
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = eicosenoic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = eicosenoic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 L'acido eicosenoico è contenuto in gran parte degli oli del cluster 2, mentre gli altri gruppi contengono tutti valori di concentrazione prossimi allo zero.
@@ -1233,7 +1233,7 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
 #### Adjusted Rand Index - K Means
 
 ```{r}
-ari_km_ln <- adj.rand.index(oliveoil$macro.area, km.out$cluster)
+ari_km_ln <- adj.rand.index(oliveALR$macro.area, km.out$cluster)
 ari_km_ln
 ```
 
@@ -1473,7 +1473,7 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
 #### Adjusted Rand Index - PAM
 
 ```{r}
-ari_pam_ln <- adj.rand.index(oliveoil$macro.area, pam.out$cluster)
+ari_pam_ln <- adj.rand.index(oliveALR$macro.area, pam.out$cluster)
 ari_pam_ln
 ```
 
@@ -1693,7 +1693,7 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Cluster, y = Re
 #### Adjusted Rand Index - DB SCAN
 
 ```{r}
-ari_db_ln <- adj.rand.index(oliveoil$macro.area, db.out$cluster)
+ari_db_ln <- adj.rand.index(oliveALR$macro.area, db.out$cluster)
 ari_db_ln
 ```
 
