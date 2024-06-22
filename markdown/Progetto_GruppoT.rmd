@@ -1726,6 +1726,212 @@ points(oliveGPS$long, oliveGPS$lat, col=db.out$cluster+1, pch=19, cex=0.3)
 ```
 
 
+### DB SCAN con ALR
+
+
+```{r}
+set.seed(17)
+pdf.out <- pdfCluster(oliveALR[, 3:9], graphtype = 'pairs', lambda = 0.10)
+str(pdf.out)
+```
+
+
+Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
+
+
+
+```{r}
+
+par(mfrow=c(2,3))
+
+# palmitic palmitoleic
+plot(oliveALR$palmitic, oliveALR$palmitoleic, col = pdf.out@clusters, pch = 19)
+# linoleic palmitoleic
+plot(oliveALR$linoleic, oliveALR$palmitoleic, col = pdf.out@clusters, pch = 19)
+
+# arachidic linolenic
+plot(oliveALR$linolenic, oliveALR$arachidic, col = pdf.out@clusters, pch = 19)
+
+# eicosenoic palmitic
+plot(oliveALR$palmitic, oliveALR$eicosenoic, col = pdf.out@clusters, pch = 19)
+
+# eicosenoic linolenic
+plot(oliveALR$linolenic, oliveALR$eicosenoic, col = pdf.out@clusters, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+
+#### Variabile `palmitic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = palmitic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+
+#### Variabile `palmitoleic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = palmitoleic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `stearic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = stearic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+
+#### Variabile `linoleic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = linolenic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `linolenic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = linolenic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+
+#### Variabile `arachidic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = arachidic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+
+#### Variabile `eicosenoic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = eicosenoic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+#### Variabile `macro.area`
+
+
+```{r}
+prop.table(table(oliveALR$macro.area, pdf.out@clusters),1)
+
+barplot(prop.table(table(oliveALR$macro.area, pdf.out@clusters),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4)
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, pdf.out@clusters),1)
+), fill = 2:4, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(oliveALR$macro.area, pdf.out@clusters),2), beside = T, legend = F, main = "", col = 2:4)
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, pdf.out@clusters),1)
+), fill = 2:4, cex = 0.8, bty = "n")
+```
+
+Gli oli del sud si concentrano al 99% nel cluster 1, 1% nel cluster 3.
+Gli oli della Sardegna si trovano al 100% nel cluster 2.
+Gli oli del centro nord si dividono al 18% nel cluster 2, al 58% nel cluster 3, al 20% nel cluster 4, al 4% nel cluster 5.
+IL cluster 1 è formato al 100% da oli del sud.
+IL cluster 2 è composto al 78% da oli della sardegna e al 22% da oli del centro nord.
+Il cluster 4 è composto al 100% da oli del centro nord.
+Il cluster 5 al 100% da oli del centro nord.
+
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix <- table(Aree = oliveALR$macro.area, Cluster = pdf.out@clusters)
+
+table(Aree = oliveALR$macro.area, Cluster = pdf.out@clusters)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Aree, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Variabile `region`
+
+```{r}
+prop.table(table(pdf.out@clusters, oliveALR$region),1)
+
+barplot(prop.table(table(pdf.out@clusters, oliveALR$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(prop.table(table(pdf.out@clusters, oliveALR$region),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(pdf.out@clusters, oliveALR$region),2), beside = T, legend = F, main = "", col = 2:5, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(prop.table(table(pdf.out@clusters, oliveALR$region),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+```
+
+Il cluster 1 è composto al 64% da oli della puglia del sud, al 11% da oli della sicilia, al 17% da oli della calabria, e al 7% da oli della puglia del nord.
+Il cluster 2 è composto al 52% da oli della sardegna Inland, al 26% da oli della sardegna coast, al 20% da oli della liguria est.
+Il cluster 3 è composto al 2% da oli della puglia del nord,al 25% da oli della liguria est, al 16% da oli della liguria ovest, al 57% da oli dell'umbria.
+Il cluster 4 è composto al 100% da oli della liguria est.
+Il cluster 5 è composto al 100% da oli della liguria oovest.
+
+Gli oli della puglia nord si dividono tra cluster 1 (92%) e 3 (8%).
+Gli oli della Calabria si trovano al 100% nel cluster 1.
+Gli oli della puglia del sud si trovano al 100% nel cluster 1.
+Gli oli della Sicilia si trovano al 100% nel cluster 1.
+Gli oli della Sardegna inland si trovano al 100% nel cluster 2.
+Gli oli della liguria est si trovano nel cluster 2 (50%), nel cluster 3 (44%), nel cluster 4 (6%).
+Gli oli della liguria ovest si trovano nel cluster 2 (4%), cluster 3 (28%), cluster 4 (54%) e cluster 5 (14%).
+Gli oli dell'Umbria si trovano al 100% nel cluster 3.
+
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix_regioni <- table(Regioni = oliveALR$region, Cluster = pdf.out@clusters)
+
+table(Regioni = oliveALR$region, Cluster = pdf.out@clusters)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix_regioni)), aes(x = Regioni, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Regioni", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Adjusted Rand Index - pdfCluster
+
+```{r}
+ari_pdf_ln <- adj.rand.index(oliveALR$macro.area, pdf.out@clusters)
+ari_pdf_ln
+```
+
+
+#### Mappa dei cluster sulla cartina Italiana
+
+```{r}
+map("italy", col="white", fill=TRUE, lty=1, lwd=1, border="black")
+points(oliveGPS$long, oliveGPS$lat, col=pdf.out@clusters+ 1, pch=19, cex=0.3)
+```
+
+
+
+
+## Considerazioni finali
+
+
 
 
 
