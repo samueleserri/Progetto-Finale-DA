@@ -1969,4 +1969,3 @@ points(oliveGPS$long, oliveGPS$lat, col=pdf.out@clusters+ 1, pch=19, cex=0.3)
 
 
 
-
