@@ -1330,7 +1330,7 @@ In questo caso i grafici in cui si nota meglio la divisione in cluster sono lino
 #### Variabile `palmitic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = palmitic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = palmitic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
@@ -1338,7 +1338,7 @@ ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = palmitic, fill = as.fac
 #### Variabile `palmitoleic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = palmitoleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = palmitoleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
@@ -1346,7 +1346,7 @@ ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = palmitoleic, fill = as.
 #### Variabile `stearic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = stearic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = stearic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
@@ -1355,7 +1355,7 @@ ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = stearic, fill = as.fact
 #### Variabile `linoleic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = linoleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = linoleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
@@ -1363,7 +1363,7 @@ ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = linoleic, fill = as.fac
 #### Variabile `linolenic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = linolenic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = linolenic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
@@ -1371,7 +1371,7 @@ ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = linolenic, fill = as.fa
 #### Variabile `arachidic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = arachidic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = arachidic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
@@ -1379,7 +1379,7 @@ ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = arachidic, fill = as.fa
 #### Variabile `eicosenoic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = eicosenoic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = eicosenoic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
@@ -1540,7 +1540,7 @@ par(mfrow=c(1,1))
 #### Variabile `palmitic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = palmitic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = palmitic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
@@ -1549,7 +1549,7 @@ ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = palmitic, fill = as.fact
 #### Variabile `palmitoleic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = palmitoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = palmitoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
@@ -1557,7 +1557,7 @@ ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = palmitoleic, fill = as.f
 #### Variabile `stearic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = stearic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = stearic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
@@ -1566,7 +1566,7 @@ ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = stearic, fill = as.facto
 #### Variabile `linoleic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = linoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = linoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
@@ -1574,7 +1574,7 @@ ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = linoleic, fill = as.fact
 #### Variabile `linolenic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = linolenic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = linolenic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
@@ -1583,7 +1583,7 @@ ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = linolenic, fill = as.fac
 #### Variabile `arachidic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = arachidic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = arachidic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
@@ -1592,7 +1592,7 @@ ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = arachidic, fill = as.fac
 #### Variabile `eicosenoic`
 
 ```{r}
-ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = eicosenoic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = eicosenoic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
 
