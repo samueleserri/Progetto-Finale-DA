@@ -1,0 +1,22 @@
+*** Acido palmitico ***
+Quasi tutti i valori sono compresi tra 1.4 e 2.4, vi sono alcuni valori inferiori a 1.4 e si trovano tutti nel cluster 3, la maggior parte di questi valori sono outlier, Il cluster 2 ha la devianza interna più bassa.
+
+
+*** Acido palmitoleico *** 
+La mediana dei cluster 1,4,5 e 6 è compresa tra 4 e 4.5, cluster 2 e 3 si scostano da questo range.
+
+*** acido stearico ***
+Cluster 3,4,5,6 hanno una mediana vicina. I cluster 1 e 2 si discostano signific
+ativamente, il primo verso il basso, l'altro verso l'alto.
+
+*** acido linoleico *** 
+ Devianza fra i gruppi alta, cluster 3 e 4, hanno mediane vicine, il cluster 4 presenta un discreto numero di valori outlier nel range 2.25-2.5. I cluster 1, 5 e 6 hanno la mediana nel range 2-2.25.
+
+*** acido linolenico *** 
+Primi 4 cluster hanno mediana compresa tra 5 e 6. I cluster 5 e 6 si discostano significativamente, nel cluster 5 si osservano i valori concentrati intorno a 6.5 e nel cluster 6 attorno a 9. Vi sono valori outlier in tutti i cluster.
+
+*** acido arachidico *** 
+I primi quattro cluster hanno mediana compresa tra 4.5 e 5.5 e una bassa devianza interna. I cluster 5 e 6 si discostano siginificativamente, l cluster 5 ha mediana in corrispondenza del valore 6.5, il cluster 6 in corrispondenza del valore 9.
+Gli oli presenti in questo cluster hanno percentuali di acido arachidico prossime allo zero.
+*** acido ecosenoico *** 
+Si osservano chiaramente due mode, il cluster 1 e il cluster 3 si trovano nel range 5-6 mentre gli altri cluster si trovano nel range 7.5 - 8.5. Nel range 6.5-7.5 non vi è alcun valore. Gli oli nei cluster più alti hanno percentuali di acido ecosenoico prossime allo zero.
