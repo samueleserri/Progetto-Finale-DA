@@ -244,11 +244,14 @@ analizzeremo in seguito queste coppie di variabili nel dettaglio.
 
 ## Trasformazione dei dati
 
+Si sceglie di togliere dal dataset la colonna acido oleico, che non verrà considerata per la prima parte dell'analisi in cluster
+
 ```{r}
 oliveoil <- oliveoil[, -6]
 ```
 
-xx
+Essa verrà reintrodotta in seguito per essere usata nella trasformazione ALR
+
 
 
 #### Dataset con le coordinate
