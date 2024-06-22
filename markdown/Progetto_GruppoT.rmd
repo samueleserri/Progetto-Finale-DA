@@ -435,7 +435,9 @@ legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, km.ou
 
 ```
 
-xx
+Si nota che nei cluster 1 e 2 sono concentrati gli oli provenienti dal Sud, nel cluster 3 gli oli della Sardegna e nel cluster 4 sono presenti principalmente oli del Centro Nord.
+La distribuzione in cluster ha quindi individuato le macro aree sufficientemente bene.
+
 
 
 Questo si può vedere anche dalla Confusion Matrix ovvero:
@@ -472,7 +474,11 @@ legend("topright", legend = rownames(prop.table(table(km.out$cluster, oliveoil$r
 ```
 
 
-xx
+Vediamo subito che, come indicava anche il grafico precedente, la Sardegna corrisponde quasi perfettamente al cluster 3.
+Con la divisione in regioni notiamo che il sud, il quale era diviso tra cluster 1 e 2 principalmente, era tale perchè il cluster 1 è quasi totalmente composto da oli provenienti dalla Puglia del Sud.
+Le restanti regioni del sud sono invece divise principalmente nel cluster 2 e anche nel cluster 4.
+Anche guardando le regioni la divisione in cluster è riuscita bene, con le uniche 2 regioni che producono oli che tendono a finire in cluster diversi essere la Sicilia e la zona della Liguria dell'est.
+
 
 
 
@@ -690,7 +696,8 @@ legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, pam.o
 
 ```
 
-xx
+Anche in questo caso la distribuzione in cluster mi va a individuare bene quelle che sono le macro aree, con il Sud che viene diviso tra cluster 1 e 3; il Centro Nord tra il 2 e 5 principalmente; e infine la Sardegna nel 4.
+
 
 
 Confusion Matrix:
@@ -725,7 +732,9 @@ legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveoil$
 ```
 
 
-xx
+Nella divisione in regioni notiamo ancora che la Puglia del Sud rimane isolata rispetto alle altre regioni del sud Italia, il che indica una qualità di oli prodotti che, anche se comunque simili, ha differenze rispetto alle altre del Sud Italia.
+La Liguria dell'Est rimane la regione con i più oli che appartengono a cluster diversi. Gli oli prodotti in questa zona sembrano quindi essere molto diversi tra loro anche se provenienti dalla stessa regione.
+
 
 
 Confusion Matrix: 
@@ -898,7 +907,10 @@ legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, db.ou
 
 ```
 
-xx
+Delle tre distribuzioni in cluster il metodo dbscan senza trasformazione è quello che peggio riesce a dividere le varie macro aree in diversi cluster.
+Vediamo infatti che il primo cluster contiene una gran parte degli oli provenienti sia dal Sud che dal Centro Nord. 
+La Sardegna rimane ancora la macro area meglio divisa in cluster essendo quasi perfettamente indicata con il cluster 2. Possiamo quindi dire che gli oli prodotti in questa Area hanno caratteristiche estremamente simili tra loro che oli provenienti da altre regioni non hanno.
+
 
 
 Confusion Matrix:
@@ -934,8 +946,10 @@ legend("topright", legend = rownames(counts), fill = 2:5, cex = 0.8, bty = "n")
 ```
 
 
-xx
+Vediamo subito che quasi tutta la penisola italiana e la Sicilia fanno parte del cluster 1 
+Delle osservazioni che si possono fare guardando i grafici delle regioni sono che il cluster 3 va in questo caso a prendere esclusivamente oli prodotti in Liguria dell'Ovest; e che i punti di "noise" sono presenti in tutte le regioni fatta eccezione dell'Umbria e dell'entroterra Sardo. 
 
+Confusion Matrix:
 
 ```{r}
 confusion_matrix <- table(Regioni = oliveoil$region, Cluster = db.out$cluster)
@@ -1563,6 +1577,10 @@ par(mfrow=c(1,1))
 ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = palmitic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
+Il cluster 3 che ha il range più piccolo di valori, questo è anche aiutato dal fatto che il cluster 3 è quello meno numeroso.
+Il cluster 1 è in contrasto quello a cui appartengono più tipi di oli ed ha infatti un range di valori più ampio rispetto agli altri due.
+Tra i gruppi, il cluster 3 è quello con in media percentuali più basse di acido palmitico, mentre il cluster 1 tende ad avere valori maggiori per questo acido.
+Ricordiamo che i valori più vicini allo 0 dopo la trasformazione saranno quelli con percentuali di acido maggiori.
 
 
 
@@ -1572,6 +1590,9 @@ ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = palmitic, fill = as.fact
 ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = palmitoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
+L'acido palmitileico rimane molto simile a quello palmitico sempre per via dell'alta correlazione tra le due variabili.
+Come nel caso del palmitico, il cluster 3 ha le percentuali di acido minori e il cluster 1 quelle maggiori.
+
 
 
 #### Variabile `stearic`
@@ -1580,6 +1601,8 @@ ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = palmitoleic, fill = as.f
 ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = stearic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
+Notiamo che l'acido Stearico ha mediane molto simili per i vari cluster e punti di "noise".
+L'unico cluster che si discosta dagli altri è il 3 che comprende oli con percentuali di acido stearico minori.
 
 
 
@@ -1589,6 +1612,10 @@ ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = stearic, fill = as.facto
 ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = linoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
+In questo caso vediamo che sia il cluster 1 che il cluster 2 contengono oli con un range di percentuali di acido Linoleico decisamente maggiore rispetto al cluster 3.
+Quest'ultimo è infatti molto concentrato tra 2.5 e 3.0, il che è parzialmente dovuto anche dal fatto che è il cluster meno numeroso.
+Come nei precedenti 3 esempi, il cluster 3 è quello con percentuali di acido minori.
+
 
 
 #### Variabile `linolenic`
@@ -1597,6 +1624,8 @@ ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = linoleic, fill = as.fact
 ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = linolenic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
+Guardando l'olio linolenico negli oli dei diversi cluster notiamo che i tre cluster non differiscono molto. 
+Invece, l'insieme dei punti di "noise" ha un range di valori decisamente maggiore. Questo arriva fino a valori vicino al "9", il che indica percentuali estremamente basse di acido linolenico all'interno degli oli considerati come "noise".
 
 
 
@@ -1606,6 +1635,8 @@ ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = linolenic, fill = as.fac
 ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = arachidic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
+Per l'acido arachidico notiamo una distribuzione molto simile a quella dell'acido linolenico. 
+In questo caso però vediamo che il cluster 3 si scosta maggiormente dagli altri due.
 
 
 
@@ -1614,6 +1645,11 @@ ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = arachidic, fill = as.fac
 ```{r}
 ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = eicosenoic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
+
+La distribuzione in cluster della quantità di acido eicosenoico negli oli è molto particolare.
+Sia i cluster 2 e 3 che l'insieme di punti di "noise" sembrano contenere valori estremamente bassi di acido eicosenoico, con valori che trasformati si aggirano intorno all'8.
+Ricordiamo che sono presenti diversi oli con percentuali di questo acido anche inferiori alla sensibilità delle macchine usate per calcolarla.
+L'unico cluster che non contiene oli con percentuali così basse è l'1. Questo infatti raccoglie la gran parte dei valori lontani dallo 0.
 
 
 
@@ -1641,9 +1677,9 @@ Gli oli del centro nord sono comunque distribuiti tra il cluster 2, 3 e sono anc
 
 Paragone con dati non trasformati:
 
-Con la trasformazione logaritmica notiamo che gli oli del Sud e della Sardegna hanno una distribuzione migliore tra i cluster, infatti questi solo quasi esclusivamente appartenenti ad un singolo cluster ciascuno.
-Per gli oli del Nord/Centro è invece accaduto il contrario, nella distribuzione in cluster senza trasformazione questi sono concentrati in un singolo cluster mentre con la trasformazione si dividono in 2 cluster con una gran parte di essi che sono considerati punti di "noise"
-
+Con la trasformazione logaritmica notiamo che gli oli del Sud sono meglio divisi dagli altri. 
+Infatti questi solo quasi esclusivamente appartenenti al cluster 1. 
+Mentre in precedenza gli oli che venivano considerati come punti di "noise" erano principalmente provenienti dal Sud, adesso sono principalmente del Centro Nord (anche se questo è dovuto in gran parte alla Liguria).
 
 Confusion Matrix:
 
@@ -1679,18 +1715,16 @@ legend("topright", legend = rownames(counts), fill = 2:5, cex = 0.8, bty = "n")
 
 
 Notiamo che in questo caso, rimossi i valori di "noise", la distribuzione dei cluster tra le regioni è incredibilmente precisa:
- * Oli dalla Puglia, Calabria e Sicilia sono esclusivamente presenti nel cluster 1
- * Oli da Sardegna e Liguria dell'est sono quasi totalmente nel cluster 2
- * Infine, gli oli umbri sono tutti nel cluster 3
+ - Oli dalla Puglia, Calabria e Sicilia sono esclusivamente presenti nel cluster 1
+ - Oli da Sardegna e Liguria dell'est sono quasi totalmente nel cluster 2
+ - Infine, gli oli umbri sono tutti nel cluster 3
 Notiamo però che gli oli provenienti dalla Liguria dell'ovest sono tutti considerati punti di "noise"
 
 
 Paragone con dati non trasformati:
 
-Si vede che il metodo con trasformazione logaritmica riesce a raggruppare con più precisone oli provenienti dalla stessa regione all'interno di un singolo cluster. 
-I gruppi di regioni che andavano a raggrupparsi in un singolo cluster sono cambiati. Per esempio la Puglia del nord non è più nello stesso cluster con Liguria e Puglia ma adesso è situato le cluster con Calabria, Puglia del sud e Sicilia.
-Infine, la distribuzione tra cluster degli oli provenienti dalla Liguria dell'ovest peggiora con la trasformazione. Tutti gli oli provenienti da quella regione sono infatti considerati punti di "noise" nel secondo caso.
-
+La prima cosa che salta all'occhio è la differenza nella distribuzione dei punti di "noise": mentre nel caso senza trasformazione ALR questi erano presenti in più regioni in percentuali più basse, adesso questo tipo di punti sono quasi esclusivamente presenti in Liguria.
+Notiamo anche che Liguria dell'Est e Umbria non sono più parte dello stesso cluster delle regioni del sud. E infatti il cluster 1 rappresenta in modo ottimo le regioni del Sud.
 
 Confusion Matrix:
 
@@ -1770,7 +1804,6 @@ ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = palmitic, fill = as.fa
 
 
 
-
 #### Variabile `palmitoleic`
 
 ```{r}
@@ -1784,7 +1817,6 @@ ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = palmitoleic, fill = as
 ```{r}
 ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = stearic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
-
 
 
 
@@ -1804,7 +1836,6 @@ ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = linolenic, fill = as.fac
 
 
 
-
 #### Variabile `arachidic`
 
 ```{r}
@@ -1813,12 +1844,12 @@ ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = arachidic, fill = as.f
 
 
 
-
 #### Variabile `eicosenoic`
 
 ```{r}
 ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = eicosenoic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
+
 
 
 #### Variabile `macro.area`
@@ -1927,6 +1958,7 @@ points(oliveGPS$long, oliveGPS$lat, col=pdf.out@clusters+ 1, pch=19, cex=0.3)
 ```
 
 
+## Confronto dei diversi algoritmi
 
 
 ## Considerazioni finali
