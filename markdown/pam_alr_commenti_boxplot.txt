@@ -6,8 +6,7 @@ Quasi tutti i valori sono compresi tra 1.4 e 2.4, vi sono alcuni valori inferior
 La mediana dei cluster 1,4,5 e 6 è compresa tra 4 e 4.5, cluster 2 e 3 si scostano da questo range.
 
 *** acido stearico ***
-Cluster 3,4,5,6 hanno una mediana vicina. I cluster 1 e 2 si discostano signific
-ativamente, il primo verso il basso, l'altro verso l'alto.
+Cluster 3,4,5,6 hanno una mediana vicina. I cluster 1 e 2 si discostano significativamente, il primo verso il basso, l'altro verso l'alto.
 
 *** acido linoleico *** 
  Devianza fra i gruppi alta, cluster 3 e 4, hanno mediane vicine, il cluster 4 presenta un discreto numero di valori outlier nel range 2.25-2.5. I cluster 1, 5 e 6 hanno la mediana nel range 2-2.25.
