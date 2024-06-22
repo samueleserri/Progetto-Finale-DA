@@ -1,0 +1,83 @@
+-------DBSCAN ALR-------
+
+***Variabile palmitic:
+Il cluster 3 che ha il range più piccolo di valori, questo è anche aiutato dal fatto che il cluster 3 è quello meno numeroso.
+Il cluster 1 è in contrasto quello a cui appartengono più tipi di oli ed ha infatti un range di valori più ampio rispetto agli altri due.
+Tra i gruppi, il cluster 3 è quello con in media percentuali più basse di acido palmitico, mentre il cluster 1 tende ad avere valori maggiori per questo acido.
+Ricordiamo che i valori più vicini allo 0 dopo la trasformazione saranno quelli con percentuali di acido maggiori.
+
+***Variabile palmitoleic:
+
+L'acido palmitileico rimane molto simile a quello palmitico sempre per via dell'alta correlazione tra le due variabili.
+Come nel caso del palmitico, il cluster 3 ha le percentuali di acido minori e il cluster 1 quelle maggiori.
+
+***Variabile stearic:
+
+Notiamo che l'acido Stearico ha mediane molto simili per i vari cluster e punti di "noise".
+L'unico cluster che si discosta dagli altri è il 3 che comprende oli con percentuali di acido stearico minori.
+
+***Variabile linoleic:
+
+In questo caso vediamo che sia il cluster 1 che il cluster 2 contengono oli con un range di percentuali di acido Linoleico decisamente maggiore rispetto al cluster 3.
+Quest'ultimo è infatti molto concentrato tra 2.5 e 3.0, il che è parzialmente dovuto anche dal fatto che è il cluster meno numeroso.
+Come nei precedenti 3 esempi, il cluster 3 è quello con percentuali di acido minori.
+
+***Variabile linolenic:
+
+Guardando l'olio linolenico negli oli dei diversi cluster notiamo che i tre cluster non differiscono molto. 
+Invece, l'insieme dei punti di "noise" ha un range di valori decisamente maggiore. Questo arriva fino a valori vicino al "9", il che indica percentuali estremamente basse di acido linolenico all'interno degli oli considerati come "noise".
+
+***Variabile arachidic:
+
+Per l'acido arachidico notiamo una distribuzione molto simile a quella dell'acido linolenico. 
+In questo caso però vediamo che il cluster 3 si scosta maggiormente dagli altri due.
+
+***Variabile eicosenoic:
+
+La distribuzione in cluster della quantità di acido eicosenoico negli oli è molto particolare.
+Sia i cluster 2 e 3 che l'insieme di punti di "noise" sembrano contenere valori estremamente bassi di acido eicosenoico, con valori che trasformati si aggirano intorno all'8.
+Ricordiamo che sono presenti diversi oli con percentuali di questo acido anche inferiori alla sensibilità delle macchine usate per calcolarla.
+L'unico cluster che non contiene oli con percentuali così basse è l'1. Questo infatti raccoglie la gran parte dei valori lontani dallo 0.
+
+***Variabile macro.area:
+
+Paragone con dati non trasformati:
+Con la trasformazione logaritmica notiamo che gli oli del Sud sono meglio divisi dagli altri. 
+Infatti questi solo quasi esclusivamente appartenenti al cluster 1. 
+Mentre in precedenza gli oli che venivano considerati come punti di "noise" erano principalmente provenienti dal Sud, adesso sono principalmente del Centro Nord (anche se questo è dovuto in gran parte alla Liguria).
+
+
+***Variabile region:
+
+Paragone con dati non trasformati:
+La prima cosa che salta all'occhio è la differenza nella distribuzione dei punti di "noise": mentre nel caso senza trasformazione ALR questi erano presenti in più regioni in percentuali più basse, adesso questo tipo di punti sono quasi esclusivamente presenti in Liguria.
+Notiamo anche che Liguria dell'Est e Umbria non sono più parte dello stesso cluster delle regioni del sud. E infatti il cluster 1 rappresenta in modo ottimo le regioni del Sud.
+------------------------------------------------------------------------------------
+
+-------BARPLOT NO ALR-------
+
+***KMEANS-MACROAREE:
+Si nota che nei cluster 1 e 2 sono concentrati gli oli provenienti dal Sud, nel cluster 3 gli oli della Sardegna e nel cluster 4 sono presenti principalmente oli del Centro Nord.
+La distribuzione in cluster ha quindi individuato le macro aree sufficientemente bene.
+
+***KEMANS-REGIONI:
+Vediamo subito che, come indicava anche il grafico precedente, la Sardegna corrisponde quasi perfettamente al cluster 3.
+Con la divisione in regioni notiamo che il sud, il quale era diviso tra cluster 1 e 2 principalmente, era tale perchè il cluster 1 è quasi totalmente composto da oli provenienti dalla Puglia del Sud.
+Le restanti regioni del sud sono invece divise principalmente nel cluster 2 e anche nel cluster 4.
+Anche guardando le regioni la divisione in cluster è riuscita bene, con le uniche 2 regioni che producono oli che tendono a finire in cluster diversi essere la Sicilia e la zona della Liguria dell'est.
+
+***PAM-MACROAREE:
+Anche in questo caso la distribuzione in cluster mi va a individuare bene quelle che sono le macro aree, con il Sud che viene diviso tra cluster 1 e 3; il Centro Nord tra il 2 e 5 principalmente; e infine la Sardegna nel 4.
+
+***PAM-REGIONI:
+Nella divisione in regioni notiamo ancora che la Puglia del Sud rimane isolata rispetto alle altre regioni del sud Italia, il che indica una qualità di oli prodotti che, anche se comunque simili, ha differenze rispetto alle altre del Sud Italia.
+La Liguria dell'Est rimane la regione con i più oli che appartengono a cluster diversi. Gli oli prodotti in questa zona sembrano quindi essere molto diversi tra loro anche se provenienti dalla stessa regione.
+
+***DBSCAN-MACROAREE:
+Delle tre distribuzioni in cluster il metodo dbscan senza trasformazione è quello che peggio riesce a dividere le varie macro aree in diversi cluster.
+Vediamo infatti che il primo cluster contiene una gran parte degli oli provenienti sia dal Sud che dal Centro Nord. 
+La Sardegna rimane ancora la macro area meglio divisa in cluster essendo quasi perfettamente indicata con il cluster 2. Possiamo quindi dire che gli oli prodotti in questa Area hanno caratteristiche estremamente simili tra loro che oli provenienti da altre regioni non hanno.
+
+***DBSCAN-REGIONI:
+Vediamo subito che quasi tutta la penisola italiana e la Sicilia fanno parte del cluster 1 
+Delle osservazioni che si possono fare guardando i grafici delle regioni sono che il cluster 3 va in questo caso a prendere esclusivamente oli prodotti in Liguria dell'Ovest; e che i punti di "noise" sono presenti in tutte le regioni fatta eccezione dell'Umbria e dell'entroterra Sardo. 
