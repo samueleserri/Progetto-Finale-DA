@@ -1,0 +1,2023 @@
+---
+title: "Progetto dataset oliveoil - Gruppo T"
+output: word_document
+date: "2024-06-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Abbiamo analizzato il dataset oliveoil contenuto nel pacchetto pdfCluster.
+Contenete dati relativi alla composizione chimica di diversi oli d'oliva provenienti da diverse macro aree e regioni Italiane.
+
+
+### Librerie necessarie
+```{r results = 'hide'}
+library(cluster)
+library(ggplot2)
+library(ggcorrplot)
+library(pdfCluster)
+library(dbscan)
+library(maps)
+library(moments)
+library(compositions)
+library(reshape2)
+```
+
+
+### Funzioni usate nel progetto
+```{r}
+# Funzione per le Variabili Quantitative
+display_summary_and_var <- function(variabile){
+  c(summary(variabile), 
+  var = var(variabile, na.rm = T), 
+  sd = sd(variabile, na.rm = T),
+  sk = skewness(variabile, na.rm = T))
+}
+
+# Funzione per le Variabili Qualitative
+display_table <- function(variabile, titolo){
+  DistAs <- table(variabile)
+  DistRe <- prop.table(table(variabile))
+  barplot(prop.table(table(variabile)), main = titolo)
+  print(rbind(DistAs, DistRe))
+}
+```
+
+
+## Import del dataset e pulizia dei dati
+
+Si decide di normalizzare i dati nel seguente modo:
+$$ y_{ij}=\frac{x_{ij}+1}{\sum_{j=3}^{10} (x_{ij}+1)}  \;\;\;\;,\; \forall j \; \text{ colonna} , \forall i \; \text{ riga}$$
+
+Questo perché i dati sono di natura compositiva, infatti ogni riga somma circa a 10000 e  quindi possono essere visti come la percentuale di un particolare acido nell'olio
+Dalla formula si nota che ad ogni osservazione è stato sommato 1 perché nei dati originali ci sono degli zeri dovuti alle misurazioni al di sotto del livello di sensibilità degli strumenti con la quale è stata effettuata l'analisi
+
+```{r}
+data("oliveoil")
+str(oliveoil)
+
+oliveoil[,3:10] <- oliveoil[,3:10]+1
+for (i in 1:nrow(oliveoil)){
+  oliveoil[i,3:10] <- oliveoil[i,3:10]/sum(oliveoil[i,3:10])
+}
+```
+
+
+## Anilisi univariata e bivariata del dataset
+
+
+### Variabile Macro Area
+```{r}
+display_table(oliveoil$macro.area, "Macro Area")
+```
+
+### Variabile Regioni
+```{r}
+display_table(oliveoil$region, "Regioni")
+```
+
+
+
+### Variabile acido palmitic
+
+È un acido grasso saturo con 16 atomi di carbonio. È uno degli acidi grassi più comuni presenti negli oli vegetali e negli animali. È solido a temperatura ambiente e contribuisce alla consistenza degli oli.
+
+```{r}
+display_summary_and_var(oliveoil$palmitic)
+hist(oliveoil$palmitic, probability = T,col = 5, main = "palmitic")
+boxplot(oliveoil$palmitic~oliveoil$macro.area)
+boxplot(oliveoil$palmitic~oliveoil$region)
+```
+
+Istogramma: La distribuzione è leggermente asimmetrica a destra con la maggior parte dei valori compresi tra 0.10 e 0.16.
+Boxplot (Area Macro): La regione Sud ha un valore mediano più alto rispetto a Sardegna e Centro-Nord.
+Boxplot (Regione): I valori mediani più alti si trovano in Puglia Nord e Sicilia, con una significativa variabilità e outlier, indicando una gamma diversificata di composizioni.
+
+
+
+
+### Variabile acido palmitoleic
+
+È un acido grasso monoinsaturo con 16 atomi di carbonio e un doppio legame nella posizione 9. Si trova principalmente negli oli di pesce e in alcune piante. Ha proprietà emollienti e antiossidanti.
+
+```{r}
+display_summary_and_var(oliveoil$palmitoleic)
+hist(oliveoil$palmitoleic,col = 5, main = "palmitoleic")
+boxplot(oliveoil$palmitoleic~oliveoil$macro.area)
+boxplot(oliveoil$palmitoleic~oliveoil$region)
+```
+
+Istogramma: La distribuzione è leggermente asimmetrica a destra con un picco intorno a 0.015.
+Boxplot (Area Macro): La regione Sud ha i valori mediani più alti, mentre Sardegna e Centro-Nord hanno valori più bassi.
+Boxplot (Regione): Puglia Nord e Sicilia mostrano valori mediani più alti, con una significativa variabilità e outlier, indicando una gamma diversificata di composizioni.
+
+
+
+### Variabile acido stearic
+
+È un acido grasso saturo con 18 atomi di carbonio. Comunemente presente nel burro di cacao e nel sego, viene utilizzato in cosmetica e nella produzione di candele per la sua consistenza solida a temperatura ambiente.
+
+```{r}
+display_summary_and_var(oliveoil$stearic)
+hist(oliveoil$stearic, col = 5, main = "stearic")
+boxplot(oliveoil$stearic~oliveoil$macro.area)
+boxplot(oliveoil$stearic~oliveoil$region)
+```
+
+Istogramma: La distribuzione è leggermente asimmetrica a destra, con la maggior parte dei valori compresi tra 0.02 e 0.03.
+Boxplot (Area Macro): La regione Sud ha un valore mediano più alto, mentre Sardegna e Centro-Nord hanno valori più bassi.
+Boxplot (Regione): I valori mediani più alti si trovano in Puglia Nord e Sicilia. La variabilità è alta, con molti outlier in queste regioni.
+
+
+
+
+### Variabile acido oleic
+
+È un acido grasso monoinsaturo con 18 atomi di carbonio e un doppio legame nella posizione 9. È il principale componente dell'olio d'oliva e di molti altri oli vegetali, noto per le sue proprietà benefiche per la salute cardiovascolare.
+
+```{r}
+display_summary_and_var(oliveoil$oleic)
+hist(oliveoil$oleic, col = 5, main = "oleic")
+boxplot(oliveoil$oleic~oliveoil$macro.area)
+boxplot(oliveoil$oleic~oliveoil$region)
+```
+
+Istogramma: La distribuzione è approssimativamente normale, centrata intorno a 0.75.
+Boxplot (Area Macro): La Sardegna mostra un valore mediano più alto rispetto al Sud e al Centro-Nord.
+Boxplot (Regione): Puglia Nord, Sicilia e Liguria Est hanno valori mediani più alti, con la Sicilia che mostra la gamma più ampia e molti outlier, indicando una significativa variabilità nel contenuto di acido oleico in questa regione.
+
+
+
+
+### Variabile acido linoleic
+
+È un acido grasso polinsaturo con 18 atomi di carbonio e due doppi legami nelle posizioni 9 e 12. È essenziale per il corpo umano, che non può sintetizzarlo, e si trova in oli come quello di girasole e di mais. È importante per la salute della pelle e la funzione cellulare.
+
+```{r}
+display_summary_and_var(oliveoil$linoleic)
+hist(oliveoil$linoleic, col = 5, main = "linoleic")
+boxplot(oliveoil$linoleic~oliveoil$macro.area)
+boxplot(oliveoil$linoleic~oliveoil$region)
+```
+
+Istogramma: La distribuzione è leggermente asimmetrica a destra, con un intervallo di valori compreso tra 0.04 e 0.14.
+Boxplot (Area Macro): La regione Sud ha il valore mediano più alto, mentre Sardegna e Centro-Nord hanno valori mediani significativamente più bassi.
+Boxplot (Regione): Puglia Nord, Sicilia e Liguria Est mostrano valori mediani più alti. La variabilità all'interno di queste regioni è alta, indicando composizioni dell'olio molto diverse.
+
+
+
+### Variabile acido linolenic
+
+È un acido grasso polinsaturo con 18 atomi di carbonio e tre doppi legami nelle posizioni 9, 12 e 15. È essenziale e si trova negli oli di semi di lino e di soia. Ha un ruolo cruciale nella funzione cerebrale e nella crescita normale.
+
+```{r}
+display_summary_and_var(oliveoil$linolenic)
+hist(oliveoil$linolenic, col = 5, main = "linolenic")
+boxplot(oliveoil$linolenic~oliveoil$macro.area)
+boxplot(oliveoil$linolenic~oliveoil$region)
+```
+
+Istogramma: La distribuzione è approssimativamente normale ma leggermente asimmetrica a destra. La maggior parte dei valori rientra tra 0.002 e 0.006.
+Boxplot (Area Macro): La regione Sud mostra di nuovo valori mediani più alti. Centro-Nord e Sardegna mostrano valori più bassi, con la Sardegna che ha la mediana più bassa.
+Boxplot (Regione): I valori mediani più alti si trovano in regioni come la Puglia Nord e la Sicilia. La variabilità in queste regioni è alta, con diversi outlier nella Liguria Est.
+
+
+
+
+
+### Variabile acido arachidic
+
+È un acido grasso saturo con 20 atomi di carbonio. Si trova in piccole quantità nell'olio di arachidi e nel burro di cacao. È solido a temperatura ambiente e viene utilizzato in alcuni processi industriali.
+
+```{r}
+display_summary_and_var(oliveoil$arachidic)
+hist(oliveoil$arachidic, col = 5, main = "arachidic")
+boxplot(oliveoil$arachidic~oliveoil$macro.area)
+boxplot(oliveoil$arachidic~oliveoil$region)
+```
+
+Istogramma: La distribuzione è leggermente asimmetrica a destra con un picco intorno a 0.006. Questo suggerisce che la maggior parte dei campioni di olio d'oliva ha livelli moderati di acido arachidico.
+Boxplot (Area Macro): La regione Sud mostra un valore mediano più alto, mentre Sardegna e Centro-Nord hanno valori mediani più bassi e simili.
+Boxplot (Regione): Regioni come la Puglia Nord e la Sicilia hanno valori mediani più alti rispetto ad altre come la Liguria Est. Ci sono outlier nel Sud e nella Puglia Nord.
+
+
+
+### Variabile acido eicosenoic
+
+È un acido grasso monoinsaturo con 20 atomi di carbonio e un doppio legame nella posizione 11. È presente in piccole quantità negli oli vegetali e ha proprietà simili ad altri acidi grassi monoinsaturi, contribuendo alla fluidità delle membrane cellulari.
+
+```{r}
+display_summary_and_var(oliveoil$eicosenoic)
+hist(oliveoil$eicosenoic, col = 5, main = "eicosenoic")
+boxplot(oliveoil$eicosenoic~oliveoil$macro.area)
+boxplot(oliveoil$eicosenoic~oliveoil$region)
+```
+
+Istogramma: La distribuzione dell'acido eicosenoico è fortemente asimmetrica a destra, con la maggior parte dei campioni che presentano una concentrazione molto bassa (vicina a 0.000). Questo indica che alte concentrazioni di acido eicosenoico sono rare.
+Boxplot (Area Macro): Il boxplot mostra che la regione Sud ha una concentrazione mediana più alta rispetto alla Sardegna e al Centro-Nord, con queste ultime due che hanno valori molto bassi e simili.
+Boxplot (Regione): Le regioni come la Puglia Nord e la Sicilia mostrano valori mediani più alti, mentre regioni come la Liguria Est hanno concentrazioni costantemente basse. Ci sono diversi outlier nel Sud e in Sicilia.
+
+
+
+
+## Correlazione tra gli acidi
+
+```{r}
+ggcorrplot(cor(oliveoil[,3:9]), type = "lower", lab = TRUE)
+```
+
+Notiamio che le variabili con correlazione maggiore sono
+-  palmitic palmitoleic
+-  oleic palmitic
+-  oleic palmitoleic
+-  linoleic palmitoleic
+-  linoleic oleic
+-  arachidic linolenic
+-  eicosenoic palmitic
+-  eicosenoic linolenic
+
+analizzeremo in seguito queste coppie di variabili nel dettaglio.
+
+
+
+## Trasformazione dei dati
+
+Si sceglie di togliere dal dataset la colonna acido oleico, che non verrà considerata per la prima parte dell'analisi in cluster
+
+```{r}
+oliveoil <- oliveoil[, -6]
+```
+
+Essa verrà reintrodotta in seguito per essere usata nella trasformazione ALR
+
+
+
+#### Dataset con le coordinate
+
+Creazione del dataset contenete le coordinate GPS degli oli usato in seguito per i plot delle mappe
+
+Si è deciso di sommare un offset alle coordinate dei punti di ogni regione, in modo da evitare che ogni singola osservazione venisse sovrapposta e per meglio mostrare visivamente la divisione in cluster di ogni regione.
+
+```{r}
+
+oliveGPS <- oliveoil[,1:2]
+oliveGPS$lat <- NA
+oliveGPS$long <- NA
+
+region_coords <- list(
+  "Apulia.north" = c(lat = 41.4, long = 15.5),
+  "Calabria" = c(lat = 39.0, long = 16.5),
+  "Apulia.south" = c(lat = 40.0, long = 18.0),
+  "Sicily" = c(lat = 37.6, long = 14.1),
+  "Sardinia.inland" = c(lat = 40.1, long = 9.0),
+  "Sardinia.coast" = c(lat = 39.1, long = 9.7),
+  "Liguria.east" = c(lat = 44.3, long = 9.5),
+  "Liguria.west" = c(lat = 44.0, long = 8.0),
+  "Umbria" = c(lat = 42.9, long = 12.6)
+)
+
+for (i in 1:nrow(oliveGPS)) {
+  region <- oliveGPS$region[i]
+  if (region %in% names(region_coords)) {
+    oliveGPS$lat[i] <- region_coords[[region]]["lat"]
+    oliveGPS$long[i] <- region_coords[[region]]["long"]
+  }
+}
+
+for (i in 1:nrow(oliveGPS)) {
+  oliveGPS$lat[i] <- oliveGPS$lat[i] + runif(1, min = -0.4, max = 0.4)
+  oliveGPS$long[i] <- oliveGPS$long[i] + runif(1, min = -0.4, max = 0.4)
+}
+
+```
+
+
+
+
+## Cluster Analysis
+
+Abbiamo utilizzato quattro diversi algoritmi di clusterizzazione:
+- k-means
+- PAM
+- DBSCAN
+- pdfCluster
+
+
+### K-Means
+
+K-Means è un metodo di raggruppamento in cluster che misura le distanze dei punti di un cluster dal suo centro e cerca di minimizzarla.
+L'algoritmo prende in input il dataset e il numero di cluster voluto e opera nel seguente modo:
+1. si scelgono K punti casuali diversi dai punti del dataset che sono  i centroidi dei  cluster
+2. si associa ogni dato al centroide più vicino
+3. per ogni gruppo si trova il punto medio che diventerà il nuovo centroide di quel gruppo
+4. itero dal punto 2 fino a quando nessun dato cambia gruppo tra un'iterazione e l'altra
+
+L'algoritmo viene implementato in R attraverso la funzione kmeans()
+
+Per la scelta del miglior K usiamo il metodo elbow:
+Si prova a implementare k-means con diversi valori di K, e per ognuno si calcola la withinss, ovvero la somma dei quadrati delle distanze tra i punti e il centro del cluster a cui appartengono.
+Quindi si fa il plot dei valori ottenuti e si sceglie il miglior compromesso tra una bassa withinss e un numero di cluster adeguato
+
+
+```{r}
+withins <- c(1:9)
+for (i in 1:9){
+  km.out <- kmeans(oliveoil[,3:9], centers = i, nstart = 15)
+  withins[i] <- km.out$tot.withinss
+}
+plot(1:9, withins, pch=19, col = "blue")
+
+# dal grafico si nota che il numero migliore di cluster è 3 o 4
+
+# si procede con l'implementazione di kmeans con K=4
+set.seed(17)
+km.out <- kmeans(oliveoil[,3:9], centers=4, nstart = 15)
+str(km.out)
+```
+
+
+Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
+
+```{r}
+par(mfrow=c(2,3))
+
+# palmitic palmitoleic
+plot(oliveoil$palmitic, oliveoil$palmitoleic, col = km.out$cluster, pch = 19)
+
+# linoleic palmitoleic
+plot(oliveoil$linoleic, oliveoil$palmitoleic, col = km.out$cluster, pch = 19)
+
+# arachidic linolenic
+plot(oliveoil$linolenic, oliveoil$arachidic, col = km.out$cluster, pch = 19)
+
+# eicosenoic palmitic
+plot(oliveoil$palmitic, oliveoil$eicosenoic, col = km.out$cluster, pch = 19)
+
+# eicosenoic linolenic
+plot(oliveoil$linolenic, oliveoil$eicosenoic, col = km.out$cluster, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+
+
+#### Variabile `palmitic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = palmitic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `palmitoleic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = palmitoleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `stearic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = stearic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `linoleic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = linoleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+
+#### Variabile `linolenic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = linolenic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `arachidic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = arachidic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `eicosenoic` nei cluster
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(km.out$cluster), y = eicosenoic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+
+#### Variabile `macro.area` nei cluster
+
+```{r}
+
+prop.table(table(oliveoil$macro.area, km.out$cluster),1)
+
+barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4)
+legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, km.out$cluster),1)
+), fill = 2:4, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(oliveoil$macro.area, km.out$cluster),2), beside = T, legend = F, main = "", col = 2:4)
+legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, km.out$cluster),1)
+), fill = 2:4, cex = 0.8, bty = "n")
+
+
+```
+
+Si nota che nei cluster 1 e 2 sono concentrati gli oli provenienti dal Sud, nel cluster 3 gli oli della Sardegna e nel cluster 4 sono presenti principalmente oli del Centro Nord.
+La distribuzione in cluster ha quindi individuato le macro aree sufficientemente bene.
+
+
+
+Questo si può vedere anche dalla Confusion Matrix ovvero:
+
+```{r}
+confusion_matrix <- table(Aree = oliveoil$macro.area, Cluster = km.out$cluster)
+
+table(Aree = oliveoil$macro.area, Cluster = km.out$cluster)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Aree, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Variabile `region` nei cluster
+
+```{r}
+prop.table(table(km.out$cluster, oliveoil$region),1)
+
+barplot(prop.table(table(km.out$cluster, oliveoil$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(prop.table(table(km.out$cluster, oliveoil$region),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(km.out$cluster, oliveoil$region),2), beside = T, legend = F, main = "", col = 2:5, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(prop.table(table(km.out$cluster, oliveoil$region),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+
+```
+
+
+Vediamo subito che, come indicava anche il grafico precedente, la Sardegna corrisponde quasi perfettamente al cluster 3.
+Con la divisione in regioni notiamo che il sud, il quale era diviso tra cluster 1 e 2 principalmente, era tale perchè il cluster 1 è quasi totalmente composto da oli provenienti dalla Puglia del Sud.
+Le restanti regioni del sud sono invece divise principalmente nel cluster 2 e anche nel cluster 4.
+Anche guardando le regioni la divisione in cluster è riuscita bene, con le uniche 2 regioni che producono oli che tendono a finire in cluster diversi essere la Sicilia e la zona della Liguria dell'est.
+
+
+
+
+Di seguito la confusion matrix:
+
+```{r}
+confusion_matrix <- table(Regioni = oliveoil$region, Cluster = km.out$cluster)
+
+table(Regioni = oliveoil$region, Cluster = km.out$cluster)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Regioni, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Regioni", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+#### Adjusted Rand Index - K Means
+
+```{r}
+ari_km <- adj.rand.index(oliveoil$macro.area, km.out$cluster)
+ari_km
+```
+
+
+
+#### Mappa dei cluster sulla cartina Italiana
+
+```{r}
+map("italy", col="white", fill=TRUE, lty=1, lwd=1, border="black")
+points(oliveGPS$long, oliveGPS$lat, col=km.out$cluster+1, pch=19, cex=0.3)
+```
+
+
+
+
+
+### PAM
+L'algoritmo PAM prende in input una matrice di dati numerica, un intero k che corrisponde al numero di cluster e una metrica. PAM opera nel seguente modo:
+
+1. Si selezionano k punti (medoidi) tra i punti presenti nel dataset e si associa ogni punto al medoide più vicino secondo la metrica selezionata.
+
+2. Si selezionano in modo casuale nuovi medoidi
+
+3. Si calcola la somma di tutte le distanze tra ogni punto e il medoide al quale è associato.Si assoccia ogni punto al nuovo medoide più vicino e si calcola la somma di tutte le distanze tra ogni punto e il nuovo medoide al quale è associato.
+
+4. Se la nuova distanza è minore della vecchia allora si scambiano i medoidi
+
+5. Sitera dal punto 2 fino a quando non ci sono cambiamenti nell'insieme di medoidi.
+
+
+
+#### Distanze
+La divisione in cluster dell'algoritmo PAM dipende dalla funzione di distanza che si decide di utilizzare. Due distanze utilizzate dall'algoritmo sono:
+
+La distanza euclidea: 
+$$
+d_E(p,q) =\Big(\sum_{i = 1}^n (p_i - q_i)^2 \Big)^{\frac{1}{2}}
+$$
+La distanza di Manatthan:
+$$
+d_M(p,q) = \sum_{i = 1}^n |p_i - q_i|
+$$
+
+Si decide di testare l'algoritmo PAM con le due distanze e con diversi valori di K per scegliere i parametri che creano i cluster migliori.
+
+```{r}
+# DISTANZA MANHATTAN
+larghezza_media_m <- c(1:9)
+for (i in 2:10){
+  pam.out<-pam(oliveoil[,3:9], i, metric="manhattan", stand=TRUE, nstart = 10)
+  larghezza_media_m[i-1] <- pam.out$silinfo$avg.width
+}
+
+# DISTANZA EUCLIDEA
+larghezza_media_e <- c(1:9)
+for (i in 2:10){
+  pam.out<-pam(oliveoil[,3:9], i, metric="euclidean", stand=TRUE, nstart = 10)
+  larghezza_media_e[i-1] <- pam.out$silinfo$avg.width
+}
+
+
+plot(2:10, larghezza_media_m, col = "red", pch = 19)
+points(2:10, larghezza_media_e, col = "blue", pch = 19)
+legend("topright", legend = c("manhattan", "euclidean"), col = c("red", "blue"), pch =19)
+
+```
+
+Il numero di cluster migliore sembra essere 5.
+La distanza manhattan è migliore della distanza euclidea a parità di numero di cluster, come si vede dal grafico.
+
+
+```{r}
+set.seed(17)
+pam.out<-pam(oliveoil[,3:9], 5, metric="manhattan", stand=TRUE, nstart = 10)
+str(pam.out)
+
+# GRAFICO 
+sil_df <- as.data.frame(silhouette(pam.out)[, 1:3])
+colnames(sil_df) <- c("cluster", "neighbor", "sil_width")
+sil_df$obs <- 1:nrow(sil_df)
+sil_df <- sil_df[order(sil_df$cluster, -sil_df$sil_width),]
+sil_df$obs_ordered <- factor(sil_df$obs, levels = sil_df$obs)
+
+ggplot(sil_df, aes(x = obs_ordered, y = sil_width, fill = factor(cluster))) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = rainbow(5)) +
+  labs(title = "Silhouette Plot", x = "Observation", y = "Silhouette Width") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+```
+
+
+
+Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
+
+```{r}
+
+par(mfrow=c(2,3))
+
+# palmitic palmitoleic
+plot(oliveoil$palmitic, oliveoil$palmitoleic, col = pam.out$cluster, pch = 19)
+
+# linoleic palmitoleic
+plot(oliveoil$linoleic, oliveoil$palmitoleic, col = pam.out$cluster, pch = 19)
+
+# arachidic linolenic
+plot(oliveoil$linolenic, oliveoil$arachidic, col = pam.out$cluster, pch = 19)
+
+# eicosenoic palmitic
+plot(oliveoil$palmitic, oliveoil$eicosenoic, col = pam.out$cluster, pch = 19)
+
+# eicosenoic linolenic
+plot(oliveoil$linolenic, oliveoil$eicosenoic, col = pam.out$cluster, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+
+
+#### Variabile `palmitic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = palmitic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `palmitoleic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = palmitoleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `stearic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = stearic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+
+#### Variabile `linoleic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = linoleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `linolenic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = linolenic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `arachidic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = arachidic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `eicosenoic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(pam.out$cluster), y = eicosenoic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+
+#### Variabile `macro.area`
+
+
+```{r}
+prop.table(table(oliveoil$macro.area, pam.out$cluster),1)
+
+barplot(prop.table(table(oliveoil$macro.area, pam.out$cluster),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4, cex.names = 0.70) 
+legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, pam.out$cluster),1)
+), fill = 2:4, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(oliveoil$macro.area, pam.out$cluster),2), beside = T, legend = F, main = "", col = 2:4, cex.names = 0.70)
+legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, pam.out$cluster),1)
+), fill = 2:4, cex = 0.8, bty = "n")
+
+```
+
+Anche in questo caso la distribuzione in cluster mi va a individuare bene quelle che sono le macro aree, con il Sud che viene diviso tra cluster 1 e 3; il Centro Nord tra il 2 e 5 principalmente; e infine la Sardegna nel 4.
+
+
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix <- table(Aree = oliveoil$macro.area, Cluster = pam.out$cluster)
+
+table(Aree = oliveoil$macro.area, Cluster = pam.out$cluster)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Aree, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Variabile `region`
+
+```{r}
+prop.table(table(pam.out$cluster, oliveoil$region),1)
+
+barplot(prop.table(table(pam.out$cluster, oliveoil$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:6, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveoil$region),1)), fill = 2:6, cex = 0.8, bty = "n")
+
+
+barplot(prop.table(table(pam.out$cluster, oliveoil$region),2), beside = T, legend = F, main = "", col = 2:6, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveoil$region),1)), fill = 2:6, cex = 0.8, bty = "n")
+
+```
+
+
+Nella divisione in regioni notiamo ancora che la Puglia del Sud rimane isolata rispetto alle altre regioni del sud Italia, il che indica una qualità di oli prodotti che, anche se comunque simili, ha differenze rispetto alle altre del Sud Italia.
+La Liguria dell'Est rimane la regione con i più oli che appartengono a cluster diversi. Gli oli prodotti in questa zona sembrano quindi essere molto diversi tra loro anche se provenienti dalla stessa regione.
+
+
+
+Confusion Matrix: 
+
+```{r}
+confusion_matrix <- table(Regioni = oliveoil$region, Cluster = pam.out$cluster)
+
+table(Regioni = oliveoil$region, Cluster = pam.out$cluster)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Regioni, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Regioni", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+#### Adjusted Rand Index - Pam
+
+```{r}
+ari_pam <- adj.rand.index(oliveoil$macro.area, pam.out$cluster)
+ari_pam
+```
+
+
+
+#### Mappa dei cluster sulla cartina Italiana
+
+```{r}
+map("italy", col="white", fill=TRUE, lty=1, lwd=1, border="black")
+points(oliveGPS$long, oliveGPS$lat, col=pam.out$cluster+1, pch=19, cex=0.3)
+```
+
+
+
+
+### DB SCAN
+
+DBSCAN è un algoritmo di clustering basato sulla densità.
+L'algoritmo prende in input una matrice numerica di dati, un numero ε e un intero Q.
+Dove Q rappresenta il minimo numeo di punti neccessari a formare un cluster e ε rappresenta il raggio di un intorno.
+L'algoritmo opera nel seguente modo:
+1. Per ogni punto calcola gli intorni di raggio ε e identifica i centri che hanno un numero > Q di punti nel proprio interno.
+2. Trova le componenti connesse dei centri dell'intorno.
+3. Associa ogni punto a un cluster se dista < ε dal centro, i punti esclusi sono noise. 
+
+
+Con kNNdistplot() otteniamo il grafico delle deistanze tra un ponto e il suo 17esimo punto più vicino.
+Sceglaimo poi una distanza (raggio) con cui andremo poi a raggruppare i punti in cluster.
+
+
+```{r}
+kNNdistplot(oliveoil[,3:9], k = 17)
+abline(h=0.0088, col = "red")
+```
+
+Il parametri miglior sono 0.013 come eps, e 18 come minPts
+
+
+```{r}
+set.seed(17)
+
+db.out <- dbscan(oliveoil[,3:9], eps = 0.0088, minPts = 16)
+str(db.out)
+db.out
+```
+
+dbscan() ci diviede i dati in cluster, in questo caso 3 con 40 punti di "noise".
+
+
+Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
+
+```{r}
+
+par(mfrow=c(2,3))
+
+# palmitic palmitoleic
+plot(oliveoil$palmitic, oliveoil$palmitoleic, col = db.out$cluster+1, pch = 19)
+
+# linoleic palmitoleic
+plot(oliveoil$linoleic, oliveoil$palmitoleic, col = db.out$cluster+1, pch = 19)
+
+# arachidic linolenic
+plot(oliveoil$linolenic, oliveoil$arachidic, col = db.out$cluster+1, pch = 19)
+
+# eicosenoic palmitic
+plot(oliveoil$palmitic, oliveoil$eicosenoic, col = db.out$cluster+1, pch = 19)
+
+# eicosenoic linolenic
+plot(oliveoil$linolenic, oliveoil$eicosenoic, col = db.out$cluster+1, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+
+
+
+#### Variabile `palmitic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = palmitic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+
+#### Variabile `palmitoleic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = palmitoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `stearic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = stearic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+
+#### Variabile `linoleic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = linoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `linolenic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = linolenic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+
+#### Variabile `arachidic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = arachidic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+
+#### Variabile `eicosenoic`
+
+```{r}
+ggplot(oliveoil, aes(x = as.factor(db.out$cluster), y = eicosenoic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `macro.area`
+
+
+```{r}
+prop.table(table(db.out$cluster, oliveoil$macro.area),1)
+
+barplot(prop.table(table(oliveoil$macro.area, db.out$cluster),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4, cex.names = 0.70) 
+legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, db.out$cluster),1)), fill = 2:4, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(oliveoil$macro.area, db.out$cluster),2), beside = T, legend = F, main = "", col = 2:4, cex.names = 0.70)
+legend("topright", legend = rownames(prop.table(table(oliveoil$macro.area, db.out$cluster),1)), fill = 2:4, cex = 0.8, bty = "n")
+
+```
+
+Delle tre distribuzioni in cluster il metodo dbscan senza trasformazione è quello che peggio riesce a dividere le varie macro aree in diversi cluster.
+Vediamo infatti che il primo cluster contiene una gran parte degli oli provenienti sia dal Sud che dal Centro Nord. 
+La Sardegna rimane ancora la macro area meglio divisa in cluster essendo quasi perfettamente indicata con il cluster 2. Possiamo quindi dire che gli oli prodotti in questa Area hanno caratteristiche estremamente simili tra loro che oli provenienti da altre regioni non hanno.
+
+
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix <- table(Aree = oliveoil$macro.area, Cluster = db.out$cluster)
+
+table(Aree = oliveoil$macro.area, Cluster = db.out$cluster)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Aree, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Variabile `region`
+
+```{r}
+prop.table(table(db.out$cluster, oliveoil$region),1)
+counts <- prop.table(table(db.out$cluster, oliveoil$region), 1)
+
+barplot(prop.table(table(db.out$cluster, oliveoil$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(counts), fill = 2:5, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(db.out$cluster, oliveoil$region),2), beside = T, legend = F, main = "", col = 2:5, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(counts), fill = 2:5, cex = 0.8, bty = "n")
+
+```
+
+
+Vediamo subito che quasi tutta la penisola italiana e la Sicilia fanno parte del cluster 1 
+Delle osservazioni che si possono fare guardando i grafici delle regioni sono che il cluster 3 va in questo caso a prendere esclusivamente oli prodotti in Liguria dell'Ovest; e che i punti di "noise" sono presenti in tutte le regioni fatta eccezione dell'Umbria e dell'entroterra Sardo. 
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix <- table(Regioni = oliveoil$region, Cluster = db.out$cluster)
+
+table(Regioni = oliveoil$region, Cluster = db.out$cluster)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Regioni, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Regioni", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+#### Adjusted Rand Index - DBSCAN
+
+```{r}
+ari_db <- adj.rand.index(oliveoil$macro.area, db.out$cluster)
+ari_db
+```
+
+
+
+#### Mappa dei cluster sulla cartina Italiana
+
+```{r}
+map("italy", col="white", fill=TRUE, lty=1, lwd=1, border="black")
+points(oliveGPS$long, oliveGPS$lat, col=db.out$cluster+1, pch=19, cex=0.3)
+```
+
+
+
+## Trasformazione ALR - Additive Log-Ratio Transofmation
+
+
+A causa della natura compositiva dei dati, ovvero per il fatto che essi sommano a 10000 sulle righe, si decide di applicare una ulteriore trasformazione di tipo Additive Log-Ratio, in modo da rapportare tutte le colonne con una colonna fissata
+
+Questa trasformazione consiste nel dividere ogni colonna del dataset per una colonna scelta arbitrariamente, e di applicare al risultato l'opposto del logatirmo: come nella seguente formula:
+
+
+$$ y_{ij}= -log(\frac{x_{ij}}{x_{ik}}) \;\;\;\;,\; \forall j \not=k \; \text{ colonna}, \forall i \; \text{ riga} \text{, con k fissata}$$
+
+La colonna k viene rimossa in quanto il rapporto $$\frac{x_{ij}}{x_{ik}} $$ è sempre 1 e di conseguenza si ottengono valori nulli una volta applicato il logaritmo
+
+Quindi si è deciso di applicare la trasformazione alr al dataset oliveoil in modo da evidenziare eventuali differenze. 
+Si sceglie la colonna 6 in modo da cercare di evidenziare cluster nei dati meno correlati. In quanto l'acido oleico è il più presente ed il più correlato con le altre variabili
+
+
+#### re-import del dataset
+
+```{r}
+data("oliveoil")
+
+oliveoil[,3:10] <- oliveoil[,3:10]+1
+for (i in 1:nrow(oliveoil)){
+  oliveoil[i,3:10] <- oliveoil[i,3:10]/sum(oliveoil[i,3:10])
+}
+```
+
+
+```{r}
+oliveALR <- -log(oliveoil[,-c(1,2,6)]/oliveoil[,6])
+oliveALR <- cbind(oliveoil[,1:2], oliveALR)
+```
+
+Si vuole analizzare ora il dataset trasformato oliveALR
+
+```{r}
+ggcorrplot(cor(oliveALR[,3:9]), type = "lower", lab = TRUE)
+```
+
+Dal grafico si vede che le correlazioni ora sono  sempre positive, inoltre le variabili che erano fortemente correlate prima della trasformazione, rimangono fortemente correlate anche dopo la trasformazione logaritmica.
+
+Altre informazioni degne di nota riguardano:
+
+
+
+
+### K-means con ALR
+
+Testiamo l'algoritmo con  dati trasformati tramite ALR.
+
+Cerchiamo un buon numero di cluster con i dati trasformati usando il metodo elbow. In questo caso osserviamo che un buon numero per k è 4 oppure 5. Prima abbiamo trovato 3 o 4.
+
+```{r}
+# METODO DEL ELBOW
+withins <- c(1:9)
+for (i in 1:9){
+  km.out <- kmeans(oliveALR[,3:9], centers = i, nstart = 15)
+  withins[i] <- km.out$tot.withinss
+}
+par(mfrow=c(1,1))
+plot(1:9, withins, pch = 19, col ="darkgreen")
+```
+
+Si scieglie k = 4 e si usa la funzione kmeans()
+
+```{r}
+set.seed(17)
+km.out <- kmeans(oliveALR[,3:9], centers = 4, nstart = 15)
+str(km.out)
+km.out$size
+```
+
+Facciamo lo scatterplot di alcune variabili per visualizzare il cluster in particolare scegliamo degli acidi con una buona correlazione sulla base di quanto ottenuto dalla matrice di correlazione.
+
+```{r}
+
+par(mfrow=c(2,3))
+
+# palmitic palmitoleic
+plot(oliveALR$palmitic, oliveALR$palmitoleic, col = km.out$cluster, pch = 19)
+
+# linoleic palmitoleic
+plot(oliveALR$palmitoleic, oliveALR$linoleic, col = km.out$cluster, pch = 19)
+
+# arachidic linolenic
+plot(oliveALR$arachidic, oliveALR$linolenic, col = km.out$cluster, pch = 19)
+
+# eicosenoic palmitic
+plot(oliveALR$palmitic, oliveALR$eicosenoic, col = km.out$cluster, pch = 19)
+
+# eicosenoic linolenic
+plot(oliveALR$linolenic, oliveALR$eicosenoic, col = km.out$cluster, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+Si nota una buona divisione in cluster rispetto alle variabili palmitic e palmitoleic con un cluster identificato dal colore rosso per valori di concentrazione più bassi 
+
+
+#### Variabile `palmitic` nei cluster
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = palmitic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Nei gruppi 1, 3 e 4 la mediana dei valori è circa allineata
+Mentre il gruppo 2 presenta numerosi valori outlier oltre che ad avere una varianza più elevata.
+
+
+
+#### Variabile `palmitoleic` nei cluster
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = palmitoleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Analogamente alla variabile palmitic, si nota un cluster 2 con una devianza within più elevata rispetto agli altri gruppi, che hanno anch'essi una mediana più vicina:
+Il cluster 1 e 3 sono abbastanza simili tra loro,
+Il cluster 2 preneta numerosi valori outlier.
+Il cluster 4 ha dei valori outlier più distanti dalle code della distribuzione.
+
+
+
+#### Variabile `stearic` nei cluster
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = stearic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+
+median(oliveALR$stearic[km.out$cluster == 4])
+```
+
+I cluster 1, 2 e 3 hanno delle mediane abbastanza simili tra loro, il che indica una bassa devianza between.
+Il cluster 1 ha una devianza within più elevata ripetto agli altri.
+Il cluster 4 ha una mediana superiore a 3.65
+
+
+#### Variabile `linoleic` nei cluster
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = linoleic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+
+median(oliveALR$linoleic[km.out$cluster == 4])
+```
+
+Si nota che i cluster 2 e 3 hanno delle distribuzioni di acido linoleico simili, con una mediana vicina a 1.8.
+Inoltre questi cluster hanno una devianza within più alta.
+Il quarto cluster presenta una mediana superiore a 2.57 e numerosi valori outlier.
+
+
+
+#### Variabile `linolenic` nei cluster
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = linolenic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si nota una maggiore disparità tra i cluster rispetto agli altri acidi,
+Il cluster 1 contiene tutti gli oli che hanno una quantità di acido linoleico circa uguale a 9, Il cluster 3 presenta alcuni valori outlier mentre il cluster 4 sembra avere una devianza within maggiore degli altri cluster.
+
+
+
+#### Variabile `arachidic` nei cluster
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = arachidic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+La concentrazione di acido arachidico è distribuito tra i cluster in modo simile all'acido linolenico, si nota in questo caso che gli oli contenuti nel cluster 1 hanno una devianza within molto estera, e che i cluster 2 e 3 hanno una distribuzione abbastanza simile
+
+
+#### Variabile `eicosenoic` nei cluster
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = eicosenoic, fill = as.factor(km.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Il cluster 2 contiene alcuni valori outlier, mentre gli altri cluster hanno tutti una mediana vicina tra loro, intorno al 7.9
+I cluster 3 e 4 presentano una distribuzione simile.
+
+
+#### Variabile `macro.area`
+
+```{r}
+round(prop.table(table(oliveALR$macro.area, km.out$cluster),1), 3)
+
+barplot(prop.table(table(oliveALR$macro.area, km.out$cluster),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4, cex.names = 0.70) 
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, km.out$cluster),1)
+), fill = 2:4, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(oliveALR$macro.area, km.out$cluster),2), beside = T, legend = F, main = "", col = 2:4, cex.names = 0.70)
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, km.out$cluster),1)
+), fill = 2:4, cex = 0.8, bty = "n")
+```
+
+Gli oli del Sud si trovano al 100% nel cluster 2
+Gli oli della Sardegna al 99% nel cluster 3 e 1% nel cluster 4.
+Gli oli del centro nord al 25% nel cluster 1, 23% nel cluster 3 e 52% nel cluster 4.
+
+Il cluster 1 è composto al 100% da oli del centro nord.
+Il cluster 2 al 100% da oli del sud.
+Il cluster 3 al 73% da oli della Sardegna e al 27% da oli del centro nord.
+Il cluster 4 al 99% da oli del centro nord e all'1% da oli della sardegna.
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix <- table(Aree = oliveALR$macro.area, Cluster = km.out$cluster)
+
+table(Aree = oliveALR$macro.area, Cluster = km.out$cluster)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Aree, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+#### Variabile `region`
+
+```{r}
+round(prop.table(table(km.out$cluster, oliveALR$region),1), 3)
+
+barplot(prop.table(table(km.out$cluster, oliveALR$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(prop.table(table(km.out$cluster, oliveALR$region),1)), fill = 2:5, cex = 0.8, bty = "n")
+
+
+barplot(prop.table(table(km.out$cluster, oliveALR$region),2), beside = T, legend = F, main = "", col = 2:5, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(prop.table(table(km.out$cluster, oliveALR$region),1)), fill = 2:5, cex = 0.8, bty = "n")
+
+```
+
+Gli oli della puglia del nord si trovano al 100% nel cluster 2.
+Gli oli della calabria si trovano al 100% nel cluster 2.
+Gli oli della puglia del sud si trovano al 100% nel cluster 2.
+Gli oli della Sicilia si trovano al 100% nel cluster 2.
+Gli oli della Sardegna inland so trovano al 99% nel cluster 3 e 1% nel cluster 4.
+Gli oli della Sardegna coast si trovano al 100% nel cluster 3.
+Gli oli della liguria est si trovano al 64% nel cluster 3, al 30% nel cluster 4 e al 6% nel cluster 1.
+Gli oli della liguria ovest si trovano al 68% nel cluster 1 e al 32% nel 4.
+Gli oli dell'umbria si trovano al 94% nel cluster 4 e al 6% nel cluster 3.
+
+
+Il cluster 1 è formato al 91% da oli della liguria ovest e al 9% da oli della liguria est.
+Il cluster 2 è formato al 17% da oli della calabria, al 64% da oli della puglia sud, 8% da oli della puglia del nord e 11% da oli della Sicilia.
+Il cluster 3 è formato al 48% da oli della Sardegna inland, al 25% da oli della Sardegna coast e al 24% da oli della liguria est, al 1% da oli dell'umbria.
+Il cluster 4 contiene un 1% di oli della Sardegna inland, 19% di oli della liguria est, 20% liguria ovest e 60 % Umbria.
+
+
+Confusion Matrix: 
+
+```{r}
+confusion_matrix <- table(Regioni = oliveALR$region, Cluster = km.out$cluster)
+
+table(Regioni = oliveALR$region, Cluster = km.out$cluster)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Regioni, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Regioni", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+#### Adjusted Rand Index - K Means
+
+```{r}
+ari_km_ln <- adj.rand.index(oliveALR$macro.area, km.out$cluster)
+ari_km_ln
+```
+
+
+#### Mappa dei cluster sulla cartina Italiana
+
+```{r}
+map("italy", col="white", fill=TRUE, lty=1, lwd=1, border="black")
+points(oliveGPS$long, oliveGPS$lat, col=km.out$cluster+1, pch=19, cex=0.3)
+```
+
+
+
+### PAM con ALR
+
+
+Come visto prima, si testa l'algoritmo PAM con le due distanze e con diversi valori di K per scegliere i parametri che creano i cluster migliori.
+
+```{r}
+# DISTANZA MANHATTAN
+larghezza_media_m <- c(1:9)
+for (i in 2:10){
+  pam.out<-pam(oliveALR[,3:9], i, metric="manhattan", stand=TRUE, nstart = 10)
+  larghezza_media_m[i-1] <- pam.out$silinfo$avg.width
+}
+
+# DISTANZA EUCLIDEA
+larghezza_media_e <- c(1:9)
+for (i in 2:10){
+  pam.out<-pam(oliveALR[,3:9], i, metric="euclidean", stand=TRUE, nstart = 10)
+  larghezza_media_e[i-1] <- pam.out$silinfo$avg.width
+}
+
+plot(2:10, larghezza_media_m, col = "red", pch =19)
+points(2:10, larghezza_media_e, col = "blue", pch =19)
+legend("topright", legend = c("manhattan", "euclidean"), col = c("red", "blue"), pch =19)
+```
+
+
+Il numero di cluster migliore sembra essere 6
+La distanza manhattan è nettamente migliore della distanza euclidea a parità di numero di cluster, come si vede dal grafico
+
+
+
+```{r}
+set.seed(17)
+pam.out<-pam(oliveALR[,3:9], 6, metric="manhattan", stand=TRUE, nstart = 10)
+str(pam.out)
+
+pam.out$clusinfo[, "size"]
+
+
+# GRAFICO 
+sil_df <- as.data.frame(silhouette(pam.out)[, 1:3])
+colnames(sil_df) <- c("cluster", "neighbor", "sil_width")
+sil_df$obs <- 1:nrow(sil_df)
+sil_df <- sil_df[order(sil_df$cluster, -sil_df$sil_width),]
+sil_df$obs_ordered <- factor(sil_df$obs, levels = sil_df$obs)
+
+ggplot(sil_df, aes(x = obs_ordered, y = sil_width, fill = factor(cluster))) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = rainbow(6)) +
+  labs(title = "Silhouette Plot", x = "Observation", y = "Silhouette Width") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+```
+Si nota che 
+- Cluster 3 ha valori tutti molto distanti dagli altri gruppi, in quanto l’indice cala drasticamente
+- Cluster 5 e 6 contengono meno elementi rispetto agli altri
+- Cluster 1 e 5 contengono valori inseriti nel cluster incorretto
+
+
+
+Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
+
+```{r}
+par(mfrow=c(2,3))
+
+# palmitic palmitoleic
+plot(oliveALR$palmitic, oliveALR$palmitoleic, col = pam.out$cluster, pch = 19)
+
+# linoleic palmitoleic
+plot(oliveALR$linoleic, oliveALR$palmitoleic, col = pam.out$cluster, pch = 19)
+
+# linolenic arachidic
+plot(oliveALR$linolenic, oliveALR$arachidic, col = pam.out$cluster, pch = 19)
+
+# palmitic eicosenoic
+plot(oliveALR$palmitic, oliveALR$eicosenoic, col = pam.out$cluster, pch = 19)
+
+# linolenic eicosenoic
+plot(oliveALR$linolenic, oliveALR$eicosenoic, col = pam.out$cluster, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+In questo caso i grafici in cui si nota meglio la divisione in cluster sono linoleic-palmitoleic e palmitic-palmitoleic 
+
+
+
+#### Variabile `palmitic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = palmitic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Quasi tutti i valori sono compresi tra 1.4 e 2.4, vi sono alcuni valori inferiori a 1.4 e si trovano tutti nel cluster 3, la maggior parte di questi valori sono outlier, Il cluster 2 ha la devianza interna più bassa.
+
+
+
+#### Variabile `palmitoleic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = palmitoleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+La mediana dei cluster 1,4,5 e 6 è compresa tra 4 e 4.5, cluster 2 e 3 si scostano da questo range.
+
+
+
+#### Variabile `stearic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = stearic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Cluster 3,4,5,6 hanno una mediana vicina. I cluster 1 e 2 si discostano significativamente, il primo verso il basso, l'altro verso l'alto.
+
+
+
+
+#### Variabile `linoleic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = linoleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Devianza fra i gruppi alta, cluster 3 e 4 hanno mediane vicine, il cluster 4 presenta un discreto numero di valori outlier nel range 2.25-2.5. I cluster 1, 5 e 6 hanno la mediana nel range 2-2.25.
+
+
+
+#### Variabile `linolenic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = linolenic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+
+median(oliveALR$linolenic[pam.out$cluster == 5])
+```
+
+Primi 4 cluster hanno mediana compresa tra 5 e 6. I cluster 5 e 6 si discostano significativamente, nel cluster 5 si osservano i valori concentrati intorno a 6.5 e nel cluster 6 attorno a 9. Vi sono valori outlier in tutti i cluster.
+
+
+
+
+#### Variabile `arachidic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = arachidic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+
+median(oliveALR$arachidic[pam.out$cluster == 5])
+```
+
+Primi 4 cluster hanno mediana compresa tra 5 e 6. I cluster 5 e 6 si discostano significativamente, nel cluster 5 si osservano i valori concentrati intorno a 6.5 e nel cluster 6 attorno a 9. Vi sono valori outlier in tutti i cluster.
+Gli oli presenti in questo cluster hanno percentuali di acido arachidico prossime allo zero.
+
+
+
+#### Variabile `eicosenoic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = eicosenoic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Si osservano chiaramente due mode, il cluster 1 e il cluster 3 si trovano nel range 5-6 mentre gli altri cluster si trovano nel range 7.5 - 8.5. Nel range 6.5-7.5 non vi è alcun valore. Gli oli nei cluster più alti hanno percentuali di acido ecosenoico prossime allo zero.
+
+
+#### Variabile `macro.area`
+
+
+```{r}
+round(prop.table(table(oliveALR$macro.area, pam.out$cluster),1), 3)
+
+barplot(prop.table(table(oliveALR$macro.area, pam.out$cluster),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4, cex.names = 0.70) 
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, pam.out$cluster),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(oliveALR$macro.area, pam.out$cluster),2), beside = T, legend = F, main = "", col = 2:4, cex.names = 0.70)
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, pam.out$cluster),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+
+```
+
+Dai grafici si nota un netto miglioramento nel raggruppamento dei cluster di pam ALR ripetto agli altri algoritmi, se confrontati con i gruppi creati dalle macro areee.
+Gli oli della sardegna vengono inseriti interamente nel cluster 4.
+Gli oli del sud vengono inseriti per il 30% nel cluster 1 e 67% nel 3
+Gli oli del centro nord invece non sono ben identificati e vengono smistati nei cluster 2, 4, 5 e 6
+
+Per quanto riguarda i cluster invece, il primo e il terzo contegono oli provenienti quasi escusivamente dal sud
+Il quinto e il sesto contengono escusivamente oli del centro nord
+
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix <- table(Aree = oliveALR$macro.area, Cluster = pam.out$cluster)
+
+table(Aree = oliveALR$macro.area, Cluster = pam.out$cluster)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Aree, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Variabile `region`
+
+```{r}
+prop.table(table(pam.out$cluster, oliveALR$region),1)
+
+barplot(prop.table(table(pam.out$cluster, oliveALR$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:7, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveALR$region),1)), fill = 2:7, cex = 0.8, bty = "n")
+
+
+barplot(prop.table(table(pam.out$cluster, oliveALR$region),2), beside = T, legend = F, main = "", col = 2:7, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveALR$region),1)), fill = 2:7, cex = 0.8, bty = "n")
+
+```
+
+Oltre alle precedenti osservazioni sulla macro area Sardegna (che sono confermate dall'analisi riapetto alle regioni) si nota che:
+Gli oli della puglia sud vengono inseriti interamente nel cluster 3
+Gli oli dell'umbria vengono inseriti interamente nel custer 2, che non contiene oli provenienti da altre regioni
+Gli oli della liguria est sono smistati in diversi cluster
+
+Guardando i cluster invece possiamo affermare che il cluster 1 contiene oli della puglia nord, calabria e sicilia
+il cluster 2 contiene oli della dell'umbria e in parte della puglia nord
+il cluster 3 contiene oli della puglia sud, e in parte della sicilia
+il cluster 4 contiene oli della sardegna e liguria est 
+il cluster 5 e 6 contiene esclusivamente oli della liguria
+
+
+Confusion Matrix: 
+
+```{r}
+confusion_matrix <- table(Regioni = oliveALR$region, Cluster = pam.out$cluster)
+
+table(Regioni = oliveALR$region, Cluster = pam.out$cluster)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Regioni, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Regioni", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+#### Adjusted Rand Index - PAM
+
+```{r}
+ari_pam_ln <- adj.rand.index(oliveALR$macro.area, pam.out$cluster)
+ari_pam_ln
+```
+
+
+#### Mappa dei cluster sulla cartina Italiana
+
+```{r}
+map("italy", col="white", fill=TRUE, lty=1, lwd=1, border="black")
+points(oliveGPS$long, oliveGPS$lat, col=pam.out$cluster+1, pch=19, cex=0.3)
+```
+
+
+
+### DB SCAN con ALR
+
+
+Come visto prima, si testa l'algoritmo DBSCAN attraverso la funzione kNNdistplot() e si analizza il grafico ottenuto.
+
+
+```{r}
+kNNdistplot(oliveALR[,3:9], k = 17)
+abline(h=0.5, col = "red")
+```
+
+I parametri migliori trovati sono raggio 0.5 e punti minimi 18
+
+
+```{r}
+set.seed(17)
+
+db.out <- dbscan(oliveALR[,3:9], eps = 0.5, minPts = 18)
+str(db.out)
+db.out
+```
+
+dbscan() ci diviede i dati in cluster, in questo caso 3 con 87 punti di "noise".
+
+
+Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
+
+```{r}
+
+par(mfrow=c(2,3))
+
+# palmitic palmitoleic
+plot(oliveALR$palmitic, oliveALR$palmitoleic, col = db.out$cluster+1, pch = 19)
+
+# linoleic palmitoleic
+plot(oliveALR$linoleic, oliveALR$palmitoleic, col = db.out$cluster+1, pch = 19)
+
+# arachidic linolenic
+plot(oliveALR$linolenic, oliveALR$arachidic, col = db.out$cluster+1, pch = 19)
+
+# eicosenoic palmitic
+plot(oliveALR$palmitic, oliveALR$eicosenoic, col = db.out$cluster+1, pch = 19)
+
+# eicosenoic linolenic
+plot(oliveALR$linolenic, oliveALR$eicosenoic, col = db.out$cluster+1, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+
+#### Variabile `palmitic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = palmitic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Il cluster 3 che ha il range più piccolo di valori, questo è anche aiutato dal fatto che il cluster 3 è quello meno numeroso.
+Il cluster 1 è in contrasto quello a cui appartengono più tipi di oli ed ha infatti un range di valori più ampio rispetto agli altri due.
+Tra i gruppi, il cluster 3 è quello con in media percentuali più basse di acido palmitico, mentre il cluster 1 tende ad avere valori maggiori per questo acido.
+Ricordiamo che i valori più vicini allo 0 dopo la trasformazione saranno quelli con percentuali di acido maggiori.
+
+
+
+#### Variabile `palmitoleic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = palmitoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+L'acido palmitileico rimane molto simile a quello palmitico sempre per via dell'alta correlazione tra le due variabili.
+Come nel caso del palmitico, il cluster 3 ha le percentuali di acido minori e il cluster 1 quelle maggiori.
+
+
+
+#### Variabile `stearic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = stearic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Notiamo che l'acido Stearico ha mediane molto simili per i vari cluster e punti di "noise".
+L'unico cluster che si discosta dagli altri è il 3 che comprende oli con percentuali di acido stearico minori.
+
+
+
+#### Variabile `linoleic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = linoleic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+In questo caso vediamo che sia il cluster 1 che il cluster 2 contengono oli con un range di percentuali di acido Linoleico decisamente maggiore rispetto al cluster 3.
+Quest'ultimo è infatti molto concentrato tra 2.5 e 3.0, il che è parzialmente dovuto anche dal fatto che è il cluster meno numeroso.
+Come nei precedenti 3 esempi, il cluster 3 è quello con percentuali di acido minori.
+
+
+
+#### Variabile `linolenic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = linolenic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Guardando l'olio linolenico negli oli dei diversi cluster notiamo che i tre cluster non differiscono molto. 
+Invece, l'insieme dei punti di "noise" ha un range di valori decisamente maggiore. Questo arriva fino a valori vicino al "9", il che indica percentuali estremamente basse di acido linolenico all'interno degli oli considerati come "noise".
+
+
+
+#### Variabile `arachidic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = arachidic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+Per l'acido arachidico notiamo una distribuzione molto simile a quella dell'acido linolenico. 
+In questo caso però vediamo che il cluster 3 si scosta maggiormente dagli altri due.
+
+
+
+#### Variabile `eicosenoic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = eicosenoic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+La distribuzione in cluster della quantità di acido eicosenoico negli oli è molto particolare.
+Sia i cluster 2 e 3 che l'insieme di punti di "noise" sembrano contenere valori estremamente bassi di acido eicosenoico, con valori che trasformati si aggirano intorno all'8.
+Ricordiamo che sono presenti diversi oli con percentuali di questo acido anche inferiori alla sensibilità delle macchine usate per calcolarla.
+L'unico cluster che non contiene oli con percentuali così basse è l'1. Questo infatti raccoglie la gran parte dei valori lontani dallo 0.
+
+
+
+
+#### Variabile `macro.area`
+
+
+```{r}
+prop.table(table(db.out$cluster, oliveALR$macro.area),1)
+
+barplot(prop.table(table(oliveALR$macro.area, db.out$cluster),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4, cex.names = 0.70) 
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, db.out$cluster),1)), fill = 2:4, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(oliveALR$macro.area, db.out$cluster),2), beside = T, legend = F, main = "", col = 2:4, cex.names = 0.70)
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, db.out$cluster),1)), fill = 2:4, cex = 0.8, bty = "n")
+
+```
+
+Si nota che i tre cluster contengono tutti prevalentemente un area geografica diversa:
+- il cluster 1 contiene solo oli del Sud
+- il cluster 2 è principalmente composto da oli della Sardegna
+- il cluster 3 è formato da oli provenienti solamente dal Centro Nord
+Gli oli del centro nord sono comunque distribuiti tra il cluster 2, 3 e sono anche presenti in gran parte nell'insieme sei punti di "noise"
+
+
+Paragone con dati non trasformati:
+
+Con la trasformazione logaritmica notiamo che gli oli del Sud sono meglio divisi dagli altri. 
+Infatti questi solo quasi esclusivamente appartenenti al cluster 1. 
+Mentre in precedenza gli oli che venivano considerati come punti di "noise" erano principalmente provenienti dal Sud, adesso sono principalmente del Centro Nord (anche se questo è dovuto in gran parte alla Liguria).
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix <- table(Aree = oliveALR$macro.area, Cluster = db.out$cluster)
+
+table(Aree = oliveALR$macro.area, Cluster = db.out$cluster)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Aree, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Variabile `region`
+
+```{r}
+prop.table(table(db.out$cluster, oliveALR$region),1)
+counts <- prop.table(table(db.out$cluster, oliveALR$region), 1)
+
+barplot(prop.table(table(db.out$cluster, oliveALR$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(counts), fill = 2:5, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(db.out$cluster, oliveALR$region),2), beside = T, legend = F, main = "", col = 2:5, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(counts), fill = 2:5, cex = 0.8, bty = "n")
+
+```
+
+
+Notiamo che in questo caso, rimossi i valori di "noise", la distribuzione dei cluster tra le regioni è incredibilmente precisa:
+ - Oli dalla Puglia, Calabria e Sicilia sono esclusivamente presenti nel cluster 1
+ - Oli da Sardegna e Liguria dell'est sono quasi totalmente nel cluster 2
+ - Infine, gli oli umbri sono tutti nel cluster 3
+Notiamo però che gli oli provenienti dalla Liguria dell'ovest sono tutti considerati punti di "noise"
+
+
+Paragone con dati non trasformati:
+
+La prima cosa che salta all'occhio è la differenza nella distribuzione dei punti di "noise": mentre nel caso senza trasformazione ALR questi erano presenti in più regioni in percentuali più basse, adesso questo tipo di punti sono quasi esclusivamente presenti in Liguria.
+Notiamo anche che Liguria dell'Est e Umbria non sono più parte dello stesso cluster delle regioni del sud. E infatti il cluster 1 rappresenta in modo ottimo le regioni del Sud.
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix <- table(Regioni = oliveALR$region, Cluster = db.out$cluster)
+
+table(Regioni = oliveALR$region, Cluster = db.out$cluster)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Regioni, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Regioni", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Adjusted Rand Index - DB SCAN
+
+```{r}
+ari_db_ln <- adj.rand.index(oliveALR$macro.area, db.out$cluster)
+ari_db_ln
+```
+
+
+#### Mappa dei cluster sulla cartina Italiana
+
+```{r}
+map("italy", col="white", fill=TRUE, lty=1, lwd=1, border="black")
+points(oliveGPS$long, oliveGPS$lat, col=db.out$cluster+1, pch=19, cex=0.3)
+```
+
+
+
+
+### DB SCAN con ALR
+
+
+```{r}
+set.seed(17)
+pdf.out <- pdfCluster(oliveALR[, 3:9], graphtype = 'pairs', lambda = 0.10)
+str(pdf.out)
+```
+
+
+Per meglio visualizzare i cluster abbiamo selezionato le coppie di acidi con correlazione maggiore.
+
+
+
+```{r}
+
+par(mfrow=c(2,3))
+
+# palmitic palmitoleic
+plot(oliveALR$palmitic, oliveALR$palmitoleic, col = pdf.out@clusters, pch = 19)
+# linoleic palmitoleic
+plot(oliveALR$linoleic, oliveALR$palmitoleic, col = pdf.out@clusters, pch = 19)
+
+# arachidic linolenic
+plot(oliveALR$linolenic, oliveALR$arachidic, col = pdf.out@clusters, pch = 19)
+
+# eicosenoic palmitic
+plot(oliveALR$palmitic, oliveALR$eicosenoic, col = pdf.out@clusters, pch = 19)
+
+# eicosenoic linolenic
+plot(oliveALR$linolenic, oliveALR$eicosenoic, col = pdf.out@clusters, pch = 19)
+
+par(mfrow=c(1,1))
+```
+
+
+
+#### Variabile `palmitic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = palmitic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `palmitoleic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = palmitoleic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `stearic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = stearic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `linoleic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = linolenic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `linolenic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(db.out$cluster), y = linolenic, fill = as.factor(db.out$cluster+1))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `arachidic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = arachidic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `eicosenoic`
+
+```{r}
+ggplot(oliveALR, aes(x = as.factor(pdf.out@clusters), y = eicosenoic, fill = as.factor(pdf.out@clusters))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+```
+
+
+
+#### Variabile `macro.area`
+
+
+```{r}
+prop.table(table(oliveALR$macro.area, pdf.out@clusters),1)
+
+barplot(prop.table(table(oliveALR$macro.area, pdf.out@clusters),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:4)
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, pdf.out@clusters),1)
+), fill = 2:4, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(oliveALR$macro.area, pdf.out@clusters),2), beside = T, legend = F, main = "", col = 2:4)
+legend("topright", legend = rownames(prop.table(table(oliveALR$macro.area, pdf.out@clusters),1)
+), fill = 2:4, cex = 0.8, bty = "n")
+```
+
+Gli oli del sud si concentrano al 99% nel cluster 1, 1% nel cluster 3.
+Gli oli della Sardegna si trovano al 100% nel cluster 2.
+Gli oli del centro nord si dividono al 18% nel cluster 2, al 58% nel cluster 3, al 20% nel cluster 4, al 4% nel cluster 5.
+IL cluster 1 è formato al 100% da oli del sud.
+IL cluster 2 è composto al 78% da oli della sardegna e al 22% da oli del centro nord.
+Il cluster 4 è composto al 100% da oli del centro nord.
+Il cluster 5 al 100% da oli del centro nord.
+
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix <- table(Aree = oliveALR$macro.area, Cluster = pdf.out@clusters)
+
+table(Aree = oliveALR$macro.area, Cluster = pdf.out@clusters)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Aree, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Aree", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Variabile `region`
+
+```{r}
+prop.table(table(pdf.out@clusters, oliveALR$region),1)
+
+barplot(prop.table(table(pdf.out@clusters, oliveALR$region),1), beside = T, legend = F, main = "Poporzione all'interno dei cluster", col = 2:5, cex.names = 0.70, las=2) 
+legend("topright", legend = rownames(prop.table(table(pdf.out@clusters, oliveALR$region),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+
+barplot(prop.table(table(pdf.out@clusters, oliveALR$region),2), beside = T, legend = F, main = "", col = 2:5, cex.names = 0.70, las=2)
+legend("topright", legend = rownames(prop.table(table(pdf.out@clusters, oliveALR$region),1)
+), fill = 2:5, cex = 0.8, bty = "n")
+```
+
+Il cluster 1 è composto al 64% da oli della puglia del sud, al 11% da oli della sicilia, al 17% da oli della calabria, e al 7% da oli della puglia del nord.
+Il cluster 2 è composto al 52% da oli della sardegna Inland, al 26% da oli della sardegna coast, al 20% da oli della liguria est.
+Il cluster 3 è composto al 2% da oli della puglia del nord,al 25% da oli della liguria est, al 16% da oli della liguria ovest, al 57% da oli dell'umbria.
+Il cluster 4 è composto al 100% da oli della liguria est.
+Il cluster 5 è composto al 100% da oli della liguria oovest.
+
+Gli oli della puglia nord si dividono tra cluster 1 (92%) e 3 (8%).
+Gli oli della Calabria si trovano al 100% nel cluster 1.
+Gli oli della puglia del sud si trovano al 100% nel cluster 1.
+Gli oli della Sicilia si trovano al 100% nel cluster 1.
+Gli oli della Sardegna inland si trovano al 100% nel cluster 2.
+Gli oli della liguria est si trovano nel cluster 2 (50%), nel cluster 3 (44%), nel cluster 4 (6%).
+Gli oli della liguria ovest si trovano nel cluster 2 (4%), cluster 3 (28%), cluster 4 (54%) e cluster 5 (14%).
+Gli oli dell'Umbria si trovano al 100% nel cluster 3.
+
+
+Confusion Matrix:
+
+```{r}
+confusion_matrix_regioni <- table(Regioni = oliveALR$region, Cluster = pdf.out@clusters)
+
+table(Regioni = oliveALR$region, Cluster = pdf.out@clusters)
+
+ggplot(data = as.data.frame(as.table(confusion_matrix_regioni)), aes(x = Regioni, y = Cluster, fill = Freq)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), color = "white", size = 5) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(x = "Regioni", y = "Cluster", fill = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+#### Adjusted Rand Index - pdfCluster
+
+```{r}
+ari_pdf_ln <- adj.rand.index(oliveALR$macro.area, pdf.out@clusters)
+ari_pdf_ln
+```
+
+
+
+#### Mappa dei cluster sulla cartina Italiana
+
+```{r}
+map("italy", col="white", fill=TRUE, lty=1, lwd=1, border="black")
+points(oliveGPS$long, oliveGPS$lat, col=pdf.out@clusters+1, pch=19, cex=0.3)
+```
+
+
+
+
+## Confronto dei diversi algoritmi
+
+Per confrontare l'accuratezza degli algoritmi di clustering visti si sceglie di usare l'indice ARI (adjusted rand index) e comparare gli i gruppi formati con le macro aree fornite dal dataset
+
+Valori prossimi a 1 indicano che i cluster combaciano perfettamente con le macro aree, mentre indici prossimi allo 0 indicano una cattiva suddivisione in cluster
+
+
+Si ottengono infatti i seguenti indici:
+
+```{r}
+print(c("k-means: ", ari_km_ln), quote = FALSE)
+
+print(c("PAM: ", ari_pam_ln), quote = FALSE)
+
+print(c("DBSCAN:", ari_db_ln), quote = FALSE)
+
+print(c("pdfCluster: ", ari_pdf_ln), quote = FALSE)
+
+```
+
+Guardando l'indice si evince che l'algorimo che suddividono in cluster con più accuratezza è pdfCluster, mentre PAM  è l'algoritmo con ARI peggiore.
+
+Sorprendente è l'accuratezza di k-means, che si avvicina molto a quella di pdfCluster pur utilizzando un'algorimo meno complesso.
+
+
+
+## Considerazioni finali
+
+- La Sardegna risulta essere sempre isolata in un cluster
+- La Liguria è consistentemente la regione che presenta più varianza al suo interno: tutti gli algoritmi hanno diviso gli oli provenienti da essa in diversi cluster
+- L’Umbria è nella gran parte dei casi individuata perfettamente
+- gli oli provenienti dalla macre area Sud presentano caratteristiche molto simili tra loro
+- La Puglia del Sud viene considerata cluster separato in alcuni casi come usando l'algoritmo PAM
+
+
+
+
+
