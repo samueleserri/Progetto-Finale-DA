@@ -720,6 +720,7 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Aree, y = Clust
 ```
 
 
+
 #### Variabile `region`
 
 ```{r}
@@ -755,6 +756,7 @@ ggplot(data = as.data.frame(as.table(confusion_matrix)), aes(x = Regioni, y = Cl
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+
 
 #### Adjusted Rand Index - Pam
 
@@ -1093,7 +1095,7 @@ ggplot(oliveALR, aes(x = as.factor(km.out$cluster), y = palmitic, fill = as.fact
 ```
 
 Nei gruppi 1, 3 e 4 la mediana dei valori è circa allineata
-Mentre il gruppo 2 presenta numerosi valori outlier oltre che ad avere una devianza within più elevata.
+Mentre il gruppo 2 presenta numerosi valori outlier oltre che ad avere una varianza più elevata.
 
 
 
@@ -1307,6 +1309,9 @@ set.seed(17)
 pam.out<-pam(oliveALR[,3:9], 6, metric="manhattan", stand=TRUE, nstart = 10)
 str(pam.out)
 
+pam.out$clusinfo[, "size"]
+
+
 # GRAFICO 
 sil_df <- as.data.frame(silhouette(pam.out)[, 1:3])
 colnames(sil_df) <- c("cluster", "neighbor", "sil_width")
@@ -1322,6 +1327,10 @@ ggplot(sil_df, aes(x = obs_ordered, y = sil_width, fill = factor(cluster))) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 ```
+Si nota che 
+- Cluster 3 ha valori tutti molto distanti dagli altri gruppi, in quanto l’indice cala drasticamente
+- Cluster 5 e 6 contengono meno elementi rispetto agli altri
+- Cluster 1 e 5 contengono valori inseriti nel cluster incorretto
 
 
 
@@ -1389,7 +1398,7 @@ Cluster 3,4,5,6 hanno una mediana vicina. I cluster 1 e 2 si discostano signific
 ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = linoleic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
 ```
 
-Devianza fra i gruppi alta, cluster 3 e 4, hanno mediane vicine, il cluster 4 presenta un discreto numero di valori outlier nel range 2.25-2.5. I cluster 1, 5 e 6 hanno la mediana nel range 2-2.25.
+Devianza fra i gruppi alta, cluster 3 e 4 hanno mediane vicine, il cluster 4 presenta un discreto numero di valori outlier nel range 2.25-2.5. I cluster 1, 5 e 6 hanno la mediana nel range 2-2.25.
 
 
 
@@ -1397,6 +1406,8 @@ Devianza fra i gruppi alta, cluster 3 e 4, hanno mediane vicine, il cluster 4 pr
 
 ```{r}
 ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = linolenic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+
+median(oliveALR$linolenic[pam.out$cluster == 5])
 ```
 
 Primi 4 cluster hanno mediana compresa tra 5 e 6. I cluster 5 e 6 si discostano significativamente, nel cluster 5 si osservano i valori concentrati intorno a 6.5 e nel cluster 6 attorno a 9. Vi sono valori outlier in tutti i cluster.
@@ -1408,6 +1419,8 @@ Primi 4 cluster hanno mediana compresa tra 5 e 6. I cluster 5 e 6 si discostano 
 
 ```{r}
 ggplot(oliveALR, aes(x = as.factor(pam.out$cluster), y = arachidic, fill = as.factor(pam.out$cluster))) + geom_boxplot(width=0.7) + guides(fill = FALSE)
+
+median(oliveALR$arachidic[pam.out$cluster == 5])
 ```
 
 Primi 4 cluster hanno mediana compresa tra 5 e 6. I cluster 5 e 6 si discostano significativamente, nel cluster 5 si osservano i valori concentrati intorno a 6.5 e nel cluster 6 attorno a 9. Vi sono valori outlier in tutti i cluster.
@@ -1481,7 +1494,7 @@ legend("topright", legend = rownames(prop.table(table(pam.out$cluster, oliveALR$
 
 ```
 
-Oltre alle precedenti osservazioni sulla macro area Sardegna (che sono ocnfermate dall'analisi riapetto alle regioni) si nota che:
+Oltre alle precedenti osservazioni sulla macro area Sardegna (che sono confermate dall'analisi riapetto alle regioni) si nota che:
 Gli oli della puglia sud vengono inseriti interamente nel cluster 3
 Gli oli dell'umbria vengono inseriti interamente nel custer 2, che non contiene oli provenienti da altre regioni
 Gli oli della liguria est sono smistati in diversi cluster
@@ -1766,6 +1779,8 @@ points(oliveGPS$long, oliveGPS$lat, col=db.out$cluster+1, pch=19, cex=0.3)
 ```
 
 
+
+
 ### DB SCAN con ALR
 
 
@@ -1800,6 +1815,7 @@ plot(oliveALR$linolenic, oliveALR$eicosenoic, col = pdf.out@clusters, pch = 19)
 
 par(mfrow=c(1,1))
 ```
+
 
 
 #### Variabile `palmitic`
@@ -1956,6 +1972,7 @@ ari_pdf_ln
 ```
 
 
+
 #### Mappa dei cluster sulla cartina Italiana
 
 ```{r}
@@ -1964,11 +1981,14 @@ points(oliveGPS$long, oliveGPS$lat, col=pdf.out@clusters+1, pch=19, cex=0.3)
 ```
 
 
+
+
 ## Confronto dei diversi algoritmi
 
-Per confrontare l'accuratezza degli algoritmi di clustering visti si sceglie di usare l'indice ARI (adjusted rand index) e comparare i gruppi formati con le macro aree fornite dal dataset.
+Per confrontare l'accuratezza degli algoritmi di clustering visti si sceglie di usare l'indice ARI (adjusted rand index) e comparare gli i gruppi formati con le macro aree fornite dal dataset
 
-Valori prossimi a 1 indicano che i cluster combaciano perfettamente con le macro aree, mentre indici prossimi allo 0 indicano una cattiva suddivisione in cluster.
+Valori prossimi a 1 indicano che i cluster combaciano perfettamente con le macro aree, mentre indici prossimi allo 0 indicano una cattiva suddivisione in cluster
+
 
 Si ottengono infatti i seguenti indici:
 
@@ -1983,12 +2003,20 @@ print(c("pdfCluster: ", ari_pdf_ln), quote = FALSE)
 
 ```
 
-Guardando l'indice si evince che l'algorimo che suddivide in cluster con più accuratezza è pdfCluster, mentre PAM  è l'algoritmo con ARI peggiore.
+Guardando l'indice si evince che l'algorimo che suddividono in cluster con più accuratezza è pdfCluster, mentre PAM  è l'algoritmo con ARI peggiore.
 
 Sorprendente è l'accuratezza di k-means, che si avvicina molto a quella di pdfCluster pur utilizzando un'algorimo meno complesso.
 
 
+
 ## Considerazioni finali
+
+- La Sardegna risulta essere sempre isolata in un cluster
+- La Liguria è consistentemente la regione che presenta più varianza al suo interno: tutti gli algoritmi hanno diviso gli oli provenienti da essa in diversi cluster
+- L’Umbria è nella gran parte dei casi individuata perfettamente
+- gli oli provenienti dalla macre area Sud presentano caratteristiche molto simili tra loro
+- La Puglia del Sud viene considerata cluster separato in alcuni casi come usando l'algoritmo PAM
+
 
 
 
