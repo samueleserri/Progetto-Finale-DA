@@ -1966,6 +1966,28 @@ points(oliveGPS$long, oliveGPS$lat, col=pdf.out@clusters+1, pch=19, cex=0.3)
 
 ## Confronto dei diversi algoritmi
 
+Per confrontare l'accuratezza degli algoritmi di clustering visti si sceglie di usare l'indice ARI (adjusted rand index) e comparare gli i gruppi formati con le macro aree fornite dal dataset
+
+Valori prossimi a 1 indicano che i cluster combaciano perfettamente con le macro aree, mentre indici prossimi allo 0 indicano una cattiva suddivisione in cluster
+
+
+Si ottengono infatti i seguenti indici:
+
+```{r}
+print(c("k-means: ", ari_km_ln), quote = FALSE)
+
+print(c("PAM: ", ari_pam_ln), quote = FALSE)
+
+print(c("DBSCAN:", ari_db_ln), quote = FALSE)
+
+print(c("pdfCluster: ", ari_pdf_ln), quote = FALSE)
+
+```
+
+Guardando l'indice si evince che l'algorimo che suddividono in cluster con più accuratezza è pdfCluster, mentre PAM  è l'algoritmo con ARI peggiore.
+
+Sorprendente è l'accuratezza di k-means, che si avvicina molto a quella di pdfCluster pur utilizzando un'algorimo meno complesso.
+
 
 ## Considerazioni finali
 
